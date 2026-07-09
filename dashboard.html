@@ -238,9 +238,83 @@
   .form-success{background:#DFF3E7;color:#1F6B42;border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:12px;}
   .upload-steps{font-size:13px;color:var(--ink-muted);line-height:1.7;margin:0 0 16px;}
   .upload-steps b{color:var(--ink);}
+
+  /* ---------- app shell / sidebar ---------- */
+  html,body{min-height:100%;}
+  body{display:flex;}
+  .app-shell{display:flex;width:100%;min-height:100vh;}
+  .sidebar{
+    width:84px;flex:none;background:var(--brand);
+    display:flex;flex-direction:column;align-items:center;gap:26px;padding:20px 0;
+  }
+  .sidebar-logo{
+    width:36px;height:36px;border-radius:10px;background:var(--accent);color:var(--brand);
+    font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none;
+  }
+  .sidebar-nav{display:flex;flex-direction:column;gap:8px;width:100%;padding:0 10px;}
+  .sidebar-btn{
+    display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;
+    padding:11px 4px;border-radius:10px;background:transparent;color:rgba(255,255,255,.7);
+    font-size:10.5px;font-weight:500;
+  }
+  .sidebar-btn svg{width:20px;height:20px;flex:none;}
+  .sidebar-btn:hover{background:rgba(255,255,255,.1);color:#fff;}
+  .sidebar-btn.active{background:rgba(255,255,255,.18);color:#fff;}
+  .main-area{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .header-date{font-size:12.5px;color:var(--ink-muted);white-space:nowrap;}
+  @media (max-width:720px){
+    .app-shell{flex-direction:column;}
+    .sidebar{width:100%;flex-direction:row;justify-content:center;padding:10px 12px;gap:14px;}
+    .sidebar-logo{display:none;}
+    .sidebar-nav{flex-direction:row;width:auto;padding:0;gap:6px;}
+    .sidebar-btn{flex-direction:row;gap:6px;width:auto;padding:8px 12px;font-size:11.5px;}
+    .header-date{display:none;}
+  }
+
+  /* ---------- hero gauge cards ---------- */
+  .hero-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;}
+  @media (max-width:860px){.hero-grid{grid-template-columns:1fr;}}
+  .hero-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:16px;display:flex;align-items:center;gap:14px;
+  }
+  .ring-wrap{position:relative;width:80px;height:80px;flex:none;}
+  .ring-svg{width:80px;height:80px;}
+  .ring-track{fill:none;stroke:rgba(0,0,0,.07);stroke-width:8;}
+  .ring-progress{fill:none;stroke-width:8;stroke-linecap:round;transform:rotate(-90deg);transform-origin:40px 40px;transition:stroke-dashoffset .6s ease;}
+  .ring-value{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--ink);}
+  .hero-label{font-size:12px;color:var(--ink-muted);font-weight:600;line-height:1.45;flex:1;}
+
+  /* ---------- donut chart ---------- */
+  .donut{width:118px;height:118px;border-radius:50%;margin:6px auto 16px;}
+  .donut-legend{display:flex;flex-direction:column;gap:7px;}
+  .legend-row{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink);}
+  .legend-dot{width:9px;height:9px;border-radius:50%;flex:none;}
+  .legend-row span.legend-val{margin-left:auto;color:var(--ink-muted);font-weight:600;}
 </style>
 </head>
 <body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-logo">DT</div>
+    <nav class="sidebar-nav">
+      <button class="tab-btn sidebar-btn active" data-tab="ringkasan" aria-label="Ringkasan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span>Ringkasan</span>
+      </button>
+      <button class="tab-btn sidebar-btn" data-tab="data" aria-label="Data Temuan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="10" x2="9" y2="20"/></svg>
+        <span>Data Temuan</span>
+      </button>
+      <button class="tab-btn sidebar-btn" data-tab="tambah" aria-label="Tambah Data">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>Tambah Data</span>
+      </button>
+    </nav>
+  </aside>
+
+  <div class="main-area">
 
 <header class="top">
   <div class="wrap">
@@ -250,6 +324,7 @@
       <h1>Dashboard Temuan Staff</h1>
     </div>
     <div class="header-right">
+      <span class="header-date" id="headerDate">–</span>
       <span class="header-stats" id="headerStats">–</span>
       <span class="status-pill" id="statusPill"><span class="status-dot wait" id="statusDot"></span><span id="statusText">Menyambungkan…</span></span>
     </div>
@@ -266,14 +341,41 @@
     <button class="btn btn-secondary" id="btnImport">Impor Data Historis</button>
   </div>
 
-  <nav class="tab-nav">
-    <button class="tab-btn active" data-tab="ringkasan">Ringkasan</button>
-    <button class="tab-btn" data-tab="data">Data Temuan</button>
-    <button class="tab-btn" data-tab="tambah">Tambah Data</button>
-  </nav>
-
   <!-- ============ TAB: RINGKASAN ============ -->
   <div class="tab-panel active" id="tab-ringkasan">
+    <div class="hero-grid">
+      <div class="hero-card">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 80 80" class="ring-svg">
+            <circle cx="40" cy="40" r="34" class="ring-track"></circle>
+            <circle cx="40" cy="40" r="34" class="ring-progress" id="ringSeverity" stroke="var(--sp3)"></circle>
+          </svg>
+          <span class="ring-value" id="ringSeverityText">–%</span>
+        </div>
+        <div class="hero-label">Proporsi temuan tingkat berat (SP3) dari seluruh SP tercatat</div>
+      </div>
+      <div class="hero-card">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 80 80" class="ring-svg">
+            <circle cx="40" cy="40" r="34" class="ring-track"></circle>
+            <circle cx="40" cy="40" r="34" class="ring-progress" id="ringRepeat" stroke="var(--brand)"></circle>
+          </svg>
+          <span class="ring-value" id="ringRepeatText">–%</span>
+        </div>
+        <div class="hero-label">Staff dengan temuan berulang (&gt;1x) dari seluruh staff terdampak</div>
+      </div>
+      <div class="hero-card">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 80 80" class="ring-svg">
+            <circle cx="40" cy="40" r="34" class="ring-track"></circle>
+            <circle cx="40" cy="40" r="34" class="ring-progress" id="ringIntensity" stroke="var(--accent)"></circle>
+          </svg>
+          <span class="ring-value" id="ringIntensityText">–%</span>
+        </div>
+        <div class="hero-label">Temuan dengan potongan Rp200.000 ke atas</div>
+      </div>
+    </div>
+
     <div class="stat-grid">
       <div class="stat-card">
         <div class="label">Total Temuan</div>
@@ -304,6 +406,12 @@
         <h2>Distribusi per Outlet</h2>
         <p class="panel-sub">Jumlah temuan per lokasi outlet.</p>
         <div id="outletBars"></div>
+      </div>
+      <div class="panel">
+        <h2>Distribusi Tingkat SP</h2>
+        <p class="panel-sub">Proporsi SP1/SP2/SP3 dari seluruh temuan.</p>
+        <div class="donut" id="severityDonut"></div>
+        <div class="donut-legend" id="severityLegend"></div>
       </div>
     </div>
   </div>
@@ -408,6 +516,9 @@
   </div>
 
   <footer>Dashboard Temuan Internal — data tersimpan di Firebase Firestore.</footer>
+</div>
+
+  </div>
 </div>
 
 <!-- Modal: riwayat staff -->
@@ -648,10 +759,76 @@ function aggregateByStaff(list){
 
 function renderAll(){
   renderStats();
+  renderHeroMetrics();
+  renderSeverityDonut();
   renderRanking();
   renderOutletBars();
   populateOutletFilter();
   renderTable();
+}
+
+const RING_CIRCUMFERENCE = 2 * Math.PI * 34;
+
+function setRing(id, textId, pct){
+  const safePct = Math.max(0, Math.min(100, pct));
+  const circle = $("#"+id);
+  const offset = RING_CIRCUMFERENCE * (1 - safePct / 100);
+  circle.style.strokeDasharray = RING_CIRCUMFERENCE.toFixed(1);
+  circle.style.strokeDashoffset = offset.toFixed(1);
+  $("#"+textId).textContent = Math.round(safePct) + "%";
+}
+
+function renderHeroMetrics(){
+  if(records.length === 0){
+    setRing("ringSeverity", "ringSeverityText", 0);
+    setRing("ringRepeat", "ringRepeatText", 0);
+    setRing("ringIntensity", "ringIntensityText", 0);
+    return;
+  }
+  const allLevels = records.flatMap(r => r.spLevels.length ? r.spLevels : []);
+  const sp3Count = allLevels.filter(lv => lv === 3).length;
+  const severityPct = allLevels.length ? (sp3Count / allLevels.length) * 100 : 0;
+
+  const staffAgg = aggregateByStaff(records);
+  const repeatCount = staffAgg.filter(s => s.count > 1).length;
+  const repeatPct = staffAgg.length ? (repeatCount / staffAgg.length) * 100 : 0;
+
+  const highValueCount = records.filter(r => r.nominal >= 200000).length;
+  const intensityPct = (highValueCount / records.length) * 100;
+
+  setRing("ringSeverity", "ringSeverityText", severityPct);
+  setRing("ringRepeat", "ringRepeatText", repeatPct);
+  setRing("ringIntensity", "ringIntensityText", intensityPct);
+}
+
+function renderSeverityDonut(){
+  const allLevels = records.flatMap(r => r.spLevels.length ? r.spLevels : []);
+  const total = allLevels.length;
+  const donut = $("#severityDonut");
+  const legend = $("#severityLegend");
+  if(total === 0){
+    donut.style.background = "rgba(0,0,0,.06)";
+    legend.innerHTML = '<div class="empty-state">Belum ada data.</div>';
+    return;
+  }
+  const counts = [1,2,3].map(lv => allLevels.filter(x => x === lv).length);
+  const pcts = counts.map(c => (c / total) * 100);
+  const colors = ["var(--sp1)", "var(--sp2)", "var(--sp3)"];
+  let cursor = 0;
+  const segments = pcts.map((p, i) => {
+    const start = cursor;
+    const end = cursor + p;
+    cursor = end;
+    return `${colors[i]} ${start.toFixed(2)}% ${end.toFixed(2)}%`;
+  });
+  donut.style.background = `conic-gradient(${segments.join(", ")})`;
+  legend.innerHTML = [1,2,3].map((lv, i) => `
+    <div class="legend-row">
+      <span class="legend-dot" style="background:${colors[i]};"></span>
+      <span>SP${lv}</span>
+      <span class="legend-val">${pcts[i].toFixed(0)}% (${counts[i]})</span>
+    </div>
+  `).join("");
 }
 
 function renderStats(){
@@ -1182,6 +1359,7 @@ function switchTab(name){
 function closeOverlay(id){ $("#"+id).classList.add("hidden"); }
 
 function bindUI(){
+  $("#headerDate").textContent = new Date().toLocaleDateString("id-ID", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
   $$(".tab-btn").forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
   });
