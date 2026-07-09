@@ -48,7 +48,7 @@
   /* ---------- layout shells ---------- */
   .wrap{max-width:1280px;margin:0 auto;padding:0 24px 64px;}
   header.top{
-    background:var(--surface);
+    background:var(--bg);
     border-bottom:1px solid var(--border);
     padding:14px 0;
   }
@@ -158,6 +158,7 @@
   tbody td{padding:17px 18px;border-bottom:1px solid var(--border);font-size:13.5px;line-height:1.65;vertical-align:top;}
   tbody tr:last-child td{border-bottom:none;}
   tbody tr{transition:background .12s ease;}
+  tbody tr:nth-child(even){background:rgba(0,0,0,.018);}
   tbody tr:hover{background:var(--hover);cursor:pointer;}
   .cell-alasan{max-width:380px;white-space:normal;color:var(--ink-muted);}
   .badge{display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;margin-right:3px;}
@@ -747,6 +748,14 @@ function getFilteredRecords(){
 const PAGE_SIZE = 20;
 let currentPage = 1;
 
+function severityAccentColor(spLevels){
+  if(!spLevels || spLevels.length === 0) return "var(--border)";
+  const maxLv = Math.max(...spLevels);
+  if(maxLv === 3) return "var(--sp3)";
+  if(maxLv === 2) return "var(--sp2)";
+  return "var(--sp1)";
+}
+
 function renderTable(){
   const filtered = getFilteredRecords();
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -760,7 +769,7 @@ function renderTable(){
   $("#emptyState").classList.toggle("hidden", filtered.length > 0);
   body.innerHTML = pageItems.map(r => `
     <tr data-key="${encodeURIComponent((r.staffId && r.staffId.trim()) || r.nama)}">
-      <td>${formatTanggal(r.tanggal)}</td>
+      <td style="border-left:3px solid ${severityAccentColor(r.spLevels)};">${formatTanggal(r.tanggal)}</td>
       <td>${escapeHtml(r.nama)}</td>
       <td title="${escapeHtml(r.posisi)}">${escapeHtml(abbreviatePosisi(r.posisi))}</td>
       <td>${escapeHtml(r.outlet)}</td>
