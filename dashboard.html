@@ -48,22 +48,27 @@
   /* ---------- layout shells ---------- */
   .wrap{max-width:1280px;margin:0 auto;padding:0 24px 64px;}
   header.top{
-    background:var(--brand);
-    color:#fff;
-    padding:12px 0;
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    padding:14px 0;
   }
   header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
-  header.top h1{font-size:15px;margin:0;font-weight:600;letter-spacing:.01em;}
+  .header-brand{display:flex;align-items:center;gap:12px;}
+  .header-logo{width:24px;height:24px;border-radius:7px;background:var(--brand);flex:none;}
+  .header-divider{width:1px;height:20px;background:var(--border);flex:none;}
+  header.top h1{font-size:15px;margin:0;font-weight:600;letter-spacing:.01em;color:var(--ink);}
+  .header-right{display:flex;align-items:center;gap:16px;}
+  .header-stats{font-size:12.5px;color:var(--ink-muted);white-space:nowrap;}
   .status-pill{
     display:inline-flex;align-items:center;gap:7px;
-    background:rgba(255,255,255,.14);
-    border:1px solid rgba(255,255,255,.28);
-    padding:6px 12px;border-radius:100px;font-size:12.5px;font-weight:500;
+    background:transparent;
+    border:1px solid var(--border);
+    padding:6px 12px;border-radius:100px;font-size:12.5px;font-weight:500;color:var(--ink-muted);
     white-space:nowrap;
   }
   .status-dot{width:8px;height:8px;border-radius:50%;background:#9CA6C4;flex:none;}
-  .status-dot.ok{background:#5FE3A1;}
-  .status-dot.err{background:#FF8B7C;}
+  .status-dot.ok{background:#2E8B57;}
+  .status-dot.err{background:#C13A3A;}
   .status-dot.wait{background:#F4D06A;}
 
   .btn{
@@ -238,8 +243,15 @@
 
 <header class="top">
   <div class="wrap">
-    <h1>Dashboard Temuan Staff</h1>
-    <span class="status-pill" id="statusPill"><span class="status-dot wait" id="statusDot"></span><span id="statusText">Menyambungkan…</span></span>
+    <div class="header-brand">
+      <div class="header-logo"></div>
+      <div class="header-divider"></div>
+      <h1>Dashboard Temuan Staff</h1>
+    </div>
+    <div class="header-right">
+      <span class="header-stats" id="headerStats">–</span>
+      <span class="status-pill" id="statusPill"><span class="status-dot wait" id="statusDot"></span><span id="statusText">Menyambungkan…</span></span>
+    </div>
   </div>
 </header>
 
@@ -649,6 +661,7 @@ function renderStats(){
   $("#statStaff").textContent = staffAgg.length.toLocaleString("id-ID");
   $("#statNominal").textContent = formatRupiah(totalNominal);
   $("#statRepeat").textContent = repeatCount.toLocaleString("id-ID");
+  $("#headerStats").textContent = `${records.length.toLocaleString("id-ID")} temuan · ${staffAgg.length.toLocaleString("id-ID")} staff`;
 }
 
 function renderRanking(){
