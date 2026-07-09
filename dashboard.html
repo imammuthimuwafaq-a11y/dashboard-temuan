@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Temuan — Kepatuhan Internal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EFF2F6;
+    --surface:#FFFFFF;
+    --ink:#1A2033;
+    --ink-muted:#666F82;
+    --border:#E1E5EC;
+    --brand:#293466;
+    --brand-2:#4A5798;
+    --sp1:#C89416;
+    --sp1-bg:#FBF1D8;
+    --sp2:#D2701F;
+    --sp2-bg:#FBE7D6;
+    --sp3:#C13A3A;
+    --sp3-bg:#FADADA;
+    --ok:#2E8B57;
+    --radius:14px;
+    --shadow: 0 1px 2px rgba(20,25,40,.04), 0 6px 20px rgba(20,25,40,.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.font-display{font-family:'Sora',system-ui,sans-serif;}
+  .num{font-variant-numeric: tabular-nums;}
+  a{color:inherit;}
+
+  /* ---------- layout shells ---------- */
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px 64px;}
+  header.top{
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    color:#fff;
+    padding:28px 0 76px;
+  }
+  header.top .wrap{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .brand-eyebrow{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.78;font-weight:600;margin:0 0 6px;}
+  header.top h1{font-size:26px;margin:0 0 4px;font-weight:700;}
+  header.top p.sub{margin:0;opacity:.82;font-size:14.5px;max-width:520px;}
+  .status-pill{
+    display:inline-flex;align-items:center;gap:7px;
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.28);
+    padding:7px 13px;border-radius:100px;font-size:13px;font-weight:500;
+    white-space:nowrap;
+  }
+  .status-dot{width:8px;height:8px;border-radius:50%;background:#9CA6C4;flex:none;}
+  .status-dot.ok{background:#5FE3A1;}
+  .status-dot.err{background:#FF8B7C;}
+  .status-dot.wait{background:#F4D06A;}
+
+  .btn{
+    appearance:none;border:none;cursor:pointer;
+    font-family:inherit;font-weight:600;font-size:14.5px;
+    padding:11px 18px;border-radius:10px;
+    display:inline-flex;align-items:center;gap:8px;
+    transition:transform .12s ease, box-shadow .12s ease, background .15s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:#fff;color:var(--brand);box-shadow:var(--shadow);}
+  .btn-primary:hover{background:#F5F6FF;}
+  .btn-secondary{background:var(--surface);color:var(--ink);border:1px solid var(--border);}
+  .btn-secondary:hover{background:#F7F8FA;}
+  .btn-ghost{background:transparent;color:var(--brand);padding:8px 10px;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  /* ---------- setup banner ---------- */
+  .banner{
+    margin-top:-46px;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+  .banner strong{display:block;font-size:15px;margin-bottom:2px;}
+  .banner span{font-size:13.5px;color:var(--ink-muted);}
+
+  /* ---------- stat cards ---------- */
+  .stat-grid{
+    margin-top:22px;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:14px;
+  }
+  @media (max-width:860px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+  .stat-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:18px 20px;box-shadow:var(--shadow);
+  }
+  .stat-card .label{font-size:12.5px;color:var(--ink-muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;}
+  .stat-card .value{font-size:26px;font-weight:700;font-family:'Sora',sans-serif;}
+  .stat-card .value small{font-size:14px;font-weight:600;color:var(--ink-muted);}
+
+  /* ---------- panels ---------- */
+  .panel-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-top:16px;align-items:start;}
+  @media (max-width:900px){.panel-grid{grid-template-columns:1fr;}}
+  .panel{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:20px;
+  }
+  .panel h2{font-size:16px;margin:0 0 2px;}
+  .panel .panel-sub{font-size:13px;color:var(--ink-muted);margin:0 0 14px;}
+
+  /* severity bar */
+  .staff-row{
+    display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;
+  }
+  .staff-row:last-child{border-bottom:none;}
+  .staff-row:hover{background:#FAFBFD;margin:0 -8px;padding:10px 8px;border-radius:8px;}
+  .staff-rank{width:22px;flex:none;font-size:12.5px;color:var(--ink-muted);font-weight:600;text-align:center;}
+  .staff-info{flex:1;min-width:0;}
+  .staff-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .staff-meta{font-size:12px;color:var(--ink-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sev-bar{display:flex;height:7px;border-radius:4px;overflow:hidden;background:#EEF0F4;width:120px;flex:none;}
+  .sev-seg-1{background:var(--sp1);} .sev-seg-2{background:var(--sp2);} .sev-seg-3{background:var(--sp3);}
+  .staff-count{width:64px;flex:none;text-align:right;font-size:13.5px;font-weight:700;}
+  .staff-count small{display:block;font-weight:500;color:var(--ink-muted);font-size:11px;}
+
+  .bar-row{display:flex;align-items:center;gap:10px;padding:7px 0;}
+  .bar-label{width:130px;flex:none;font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bar-track{flex:1;height:10px;background:#EEF0F4;border-radius:5px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--brand-2);border-radius:5px;}
+  .bar-val{width:28px;flex:none;font-size:12px;font-weight:600;text-align:right;color:var(--ink-muted);}
+
+  /* ---------- table ---------- */
+  .table-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:22px 0 14px;justify-content:space-between;}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;}
+  input[type=text],input[type=date],input[type=number],select,textarea{
+    font-family:inherit;font-size:13.5px;padding:9px 11px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--ink);
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--brand-2);outline-offset:1px;}
+  table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  thead th{
+    text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-muted);
+    background:#F7F8FB;padding:12px 14px;border-bottom:1px solid var(--border);font-weight:700;
+  }
+  tbody td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#FAFBFD;cursor:pointer;}
+  .cell-alasan{max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-muted);}
+  .badge{display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;margin-right:3px;}
+  .badge-1{background:var(--sp1-bg);color:var(--sp1);}
+  .badge-2{background:var(--sp2-bg);color:var(--sp2);}
+  .badge-3{background:var(--sp3-bg);color:var(--sp3);}
+  .tag-manager{background:#E7EAF5;color:var(--brand);font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;}
+  .empty-state{padding:40px 20px;text-align:center;color:var(--ink-muted);font-size:13.5px;}
+
+  /* ---------- modal ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(20,25,40,.46);
+    display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;
+  }
+  .hidden{display:none !important;}
+  .modal{
+    background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;
+    box-shadow:0 20px 60px rgba(20,25,40,.25);
+  }
+  .modal-head{padding:20px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:10px;position:sticky;top:0;background:#fff;z-index:2;}
+  .modal-head h3{margin:0 0 2px;font-size:17px;}
+  .modal-head p{margin:0;font-size:13px;color:var(--ink-muted);}
+  .modal-body{padding:20px 22px;}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink-muted);line-height:1;padding:4px;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .form-grid .full{grid-column:1/-1;}
+  label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-muted);margin-bottom:5px;}
+  input,select,textarea{width:100%;}
+  textarea{resize:vertical;min-height:70px;}
+  .form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
+  .form-hint{font-size:12px;color:var(--ink-muted);margin-top:4px;}
+  .form-error{background:#FADADA;color:#8A2323;border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:12px;}
+
+  .history-item{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;}
+  .history-item .hi-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px;align-items:center;}
+  .history-item .hi-date{font-size:12px;color:var(--ink-muted);font-weight:600;}
+  .history-item .hi-nominal{font-size:13px;font-weight:700;}
+  .history-item .hi-alasan{font-size:13.5px;color:var(--ink);line-height:1.45;}
+  .history-note{font-size:12px;color:var(--ink-muted);background:#F7F8FB;border-radius:8px;padding:9px 11px;margin-bottom:12px;}
+
+  footer{text-align:center;padding:30px 20px;color:var(--ink-muted);font-size:12.5px;}
+
+  #configOverlay .modal{max-width:640px;}
+  #configOverlay code{background:#F1F3F8;padding:2px 6px;border-radius:5px;font-size:12.5px;}
+  #configOverlay pre{background:#1A2033;color:#E4E8F5;padding:14px;border-radius:10px;font-size:12px;overflow-x:auto;line-height:1.6;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div>
+      <p class="brand-eyebrow">Kepatuhan &amp; Kedisiplinan Internal</p>
+      <h1>Dashboard Temuan Staff</h1>
+      <p class="sub">Ringkasan Surat Peringatan (SP), riwayat per staff, dan pencatatan temuan baru.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
+      <span class="status-pill" id="statusPill"><span class="status-dot wait" id="statusDot"></span><span id="statusText">Menyambungkan…</span></span>
+      <button class="btn btn-primary" id="btnOpenAdd">+ Tambah Temuan</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="banner hidden" id="importBanner">
+    <div>
+      <strong>Data historis Jan–Mei 2026 belum dimuat</strong>
+      <span>Impor 373 catatan SP dari rekap awal ke database. Hanya perlu dilakukan sekali.</span>
+    </div>
+    <button class="btn btn-secondary" id="btnImport">Impor Data Historis</button>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="label">Total Temuan</div>
+      <div class="value num" id="statTotal">–</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Staff Terdampak</div>
+      <div class="value num" id="statStaff">–</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Total Potongan</div>
+      <div class="value num" id="statNominal">–</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Temuan Berulang (&gt;1)</div>
+      <div class="value num" id="statRepeat">–</div>
+    </div>
+  </div>
+
+  <div class="panel-grid">
+    <div class="panel">
+      <h2>Peringkat Staff</h2>
+      <p class="panel-sub">Diurutkan dari jumlah temuan terbanyak. Klik nama untuk lihat riwayat lengkap.</p>
+      <div id="rankingList"></div>
+    </div>
+    <div class="panel">
+      <h2>Distribusi per Outlet</h2>
+      <p class="panel-sub">Jumlah temuan per lokasi outlet.</p>
+      <div id="outletBars"></div>
+    </div>
+  </div>
+
+  <div class="table-toolbar">
+    <h2 class="font-display" style="margin:0;font-size:16px;">Semua Catatan</h2>
+    <div class="filters">
+      <input type="text" id="fSearch" placeholder="Cari nama staff…">
+      <select id="fOutlet"><option value="">Semua Outlet</option></select>
+      <select id="fLevel"><option value="">Semua Level</option><option value="Staff">Staff</option><option value="Manager">Manager</option></select>
+      <select id="fSp"><option value="">Semua Jenis SP</option><option value="1">SP 1</option><option value="2">SP 2</option><option value="3">SP 3</option></select>
+      <button class="btn btn-secondary" id="btnExport">Unduh CSV</button>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Tanggal</th><th>Nama Staff</th><th>Outlet</th><th>Level</th><th>Jenis SP</th><th>Nominal</th><th>Alasan</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  <div class="empty-state hidden" id="emptyState">Belum ada catatan yang cocok dengan filter ini.</div>
+
+  <footer>Dashboard Temuan Internal — data tersimpan di Firebase Firestore.</footer>
+</div>
+
+<!-- Modal: tambah temuan -->
+<div class="overlay hidden" id="addOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3>Tambah Temuan Baru</h3>
+        <p>Catatan baru akan langsung tersimpan dan tampil di riwayat staff.</p>
+      </div>
+      <button class="modal-close" data-close="addOverlay">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-error hidden" id="formError"></div>
+      <form id="addForm">
+        <div class="form-grid">
+          <div>
+            <label>Nama Staff *</label>
+            <input type="text" id="inNama" required>
+          </div>
+          <div>
+            <label>ID Staff</label>
+            <input type="text" id="inId" placeholder="Opsional">
+          </div>
+          <div>
+            <label>Posisi / Jabatan</label>
+            <input type="text" id="inPosisi" placeholder="Misal: Personal Trainer">
+          </div>
+          <div>
+            <label>Outlet *</label>
+            <input type="text" id="inOutlet" required placeholder="Misal: FTL Bekasi">
+          </div>
+          <div>
+            <label>Level *</label>
+            <select id="inLevel" required>
+              <option value="Staff">Staff</option>
+              <option value="Manager">Manager</option>
+            </select>
+          </div>
+          <div>
+            <label>Jenis SP *</label>
+            <select id="inJenis" required>
+              <option value="1">SP 1</option>
+              <option value="2">SP 2</option>
+              <option value="3">SP 3</option>
+            </select>
+          </div>
+          <div>
+            <label>Tanggal Kejadian *</label>
+            <input type="date" id="inTanggal" required>
+          </div>
+          <div>
+            <label>Nominal Potongan (Rp) *</label>
+            <input type="number" id="inNominal" required min="0" step="1000">
+            <p class="form-hint">Terisi otomatis sesuai jenis SP, bisa diubah.</p>
+          </div>
+          <div class="full">
+            <label>Alasan / Kronologi *</label>
+            <textarea id="inAlasan" required placeholder="Jelaskan kronologi temuan…"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" data-close="addOverlay">Batal</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmit" style="background:var(--brand);color:#fff;">Simpan Temuan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: riwayat staff -->
+<div class="overlay hidden" id="historyOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 id="histName">–</h3>
+        <p id="histMeta">–</p>
+      </div>
+      <button class="modal-close" data-close="historyOverlay">✕</button>
+    </div>
+    <div class="modal-body" id="histBody"></div>
+  </div>
+</div>
+
+<!-- Overlay: konfigurasi Firebase belum diisi -->
+<div class="overlay hidden" id="configOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3>Firebase belum terhubung</h3>
+        <p>Isi konfigurasi Firebase Anda di dalam file ini agar dashboard bisa menyimpan data.</p>
+      </div>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13.5px;line-height:1.6;">
+        Buka file <code>dashboard.html</code>, cari bagian <code>firebaseConfig</code> di dekat akhir file,
+        lalu ganti dengan konfigurasi dari Firebase Console Anda (Project Settings → Your apps → SDK setup and configuration):
+      </p>
+      <pre id="configErrorDetail">const firebaseConfig = {
+  apiKey: "const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "dashboard-temuan-xxxx.firebaseapp.com",
+  projectId: "dashboard-temuan-xxxx",
+  storageBucket: "dashboard-temuan-xxxx.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef"
+};
+Salin/screenshot bagian ini — Anda akan membutuhkannya di langkah berikutnya. Setelah itu klik "Continue to console".
+Bagian D — Masukkan Config ke File Dashboard
+
+Buka file dashboard.html yang saya buat, dengan Notepad (klik kanan file → Open with → Notepad, atau text editor apa pun)
+Tekan Ctrl+F, cari kata: PASTE_API_KEY_DI_SINI
+Ganti seluruh isi blok firebaseConfig di file dengan config asli dari Firebase (Bagian C di atas) — pastikan formatnya tetap sama, hanya isinya yang diganti
+Simpan file (Ctrl+S)
+
+Bagian E — Atur Firestore Security Rules
+Karena dashboard tanpa login, mode "test" hanya berlaku 30 hari lalu otomatis terkunci. Supaya permanen:
+
+Kembali ke Firebase Console → Firestore → tab Rules
+Hapus semua isi, ganti dengan:
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+
+Klik Publish
+
+⚠️ Ini membuat data bisa dibaca/diubah siapa pun yang tahu alamat project Anda — jangan bagikan link dashboard secara publik/sosial media.
+Satu hal penting sebelum Anda coba
+Jangan buka file dengan klik dua kali langsung dari komputer — browser modern (Chrome/Edge) akan memblokir koneksi Firebase kalau dibuka dengan cara itu (karena dianggap tidak aman). File ini harus diakses lewat alamat web (http/https) — yaitu setelah diupload ke GitHub Pages seperti yang kita bahas sebelumnya.
+Setelah file diupload ke GitHub Pages dan dibuka lewat link https://...github.io/..., cek pojok kanan atas dashboard — kalau tulisannya berubah jadi "Terhubung" dengan titik hijau, berarti sukses. Kalau masih error, kirim saya screenshot pesan errornya, saya bantu diagnosa.saya sudah sampai step C tidak ada "project settings" pada menu "Setting"Mengidentifikasi perubahan antarmuka Firebase dan menemukan pengaturan alternatifMengidentifikasi perubahan antarmuka Firebase dan menemukan pengaturan alternatifUI Firebase-nya memang sudah berubah tampilan dari yang saya jelaskan sebelumnya. Tapi tenang, fungsinya masih ada — hanya namanya sedikit berbeda. Coba langkah ini:
+Klik "General" (paling atas di submenu yang muncul itu). Itu adalah halaman yang sebelumnya bernama "Project settings" — di situ ada bagian "Your apps" tempat Anda bisa daftarkan Web App dan dapatkan firebaseConfig.
+Coba klik General, lalu scroll ke bawah sampai ketemu bagian "Your apps" atau "SDK setup and configuration". Kalau belum ada app terdaftar, akan ada ikon </> untuk menambahkan Web App — klik itu untuk lanjut ke langkah C seperti yang saya jelaskan sebelumnya.
+Kalau tampilannya berbeda dari yang saya duga, kirim saya screenshot halaman "General" itu, saya bantu tunjukkan tepatnya di mana.Ingin diberi tahu saat Claude merespons?",
+  authDomain: "nama-project.firebaseapp.com",
+  projectId: "nama-project",
+  storageBucket: "nama-project.appspot.com",
+  messagingSenderId: "...",
+  appId: "..."
+};</pre>
+      <p style="font-size:13px;color:var(--ink-muted);">Setelah diisi dan file di-upload ulang ke GitHub, muat ulang halaman ini.</p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, getDocs, doc, getDoc, setDoc,
+  writeBatch, serverTimestamp, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* =========================================================
+   1) KONFIGURASI FIREBASE — GANTI BAGIAN INI
+   Ambil dari: Firebase Console > Project Settings > Your apps
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "PASTE_API_KEY_DI_SINI",
+  authDomain: "PASTE_AUTH_DOMAIN_DI_SINI",
+  projectId: "PASTE_PROJECT_ID_DI_SINI",
+  storageBucket: "PASTE_STORAGE_BUCKET_DI_SINI",
+  messagingSenderId: "PASTE_SENDER_ID_DI_SINI",
+  appId: "PASTE_APP_ID_DI_SINI"
+};
+
+const SP_NOMINAL = { 1: 100000, 2: 200000, 3: 300000 };
+const isConfigFilled = !Object.values(firebaseConfig).some(v => String(v).startsWith("PASTE_"));
+
+let db = null;
+let app = null;
+let records = [];        // gabungan data historis + manual, sudah dinormalisasi
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+function setStatus(state, text){
+  const dot = $("#statusDot");
+  dot.className = "status-dot " + state;
+  $("#statusText").textContent = text;
+}
+
+function formatRupiah(n){
+  return "Rp " + Number(n||0).toLocaleString("id-ID");
+}
+
+function formatTanggal(iso){
+  if(!iso) return "Periode Jan–Mei 2026";
+  const d = new Date(iso + "T00:00:00");
+  if(isNaN(d)) return iso;
+  return d.toLocaleDateString("id-ID", { day:"2-digit", month:"short", year:"numeric" });
+}
+
+/* =========================================================
+   2) INISIALISASI FIREBASE
+   ========================================================= */
+async function init(){
+  if(!isConfigFilled){
+    setStatus("err", "Config belum diisi");
+    $("#configOverlay").classList.remove("hidden");
+    return;
+  }
+  try{
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    setStatus("ok", "Terhubung");
+    await checkImportStatus();
+    await loadRecords();
+    bindUI();
+  }catch(err){
+    console.error(err);
+    setStatus("err", "Gagal konek Firebase");
+    $("#configOverlay").classList.remove("hidden");
+    $("#configErrorDetail").textContent = "Detail error: " + err.message;
+  }
+}
+
+async function checkImportStatus(){
+  try{
+    const metaRef = doc(db, "meta", "importStatus");
+    const snap = await getDoc(metaRef);
+    if(!snap.exists() || snap.data().imported !== true){
+      $("#importBanner").classList.remove("hidden");
+    }
+  }catch(err){
+    console.error("Gagal cek status impor:", err);
+  }
+}
+
+async function loadRecords(){
+  try{
+    const q = query(collection(db, "temuan"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    records = snap.docs.map(d => normalize({ docId: d.id, ...d.data() }));
+    renderAll();
+  }catch(err){
+    console.error(err);
+    setStatus("err", "Gagal memuat data");
+  }
+}
+
+function normalize(r){
+  return {
+    docId: r.docId || null,
+    staffId: r.staffId || "",
+    nama: r.nama || "(Tanpa nama)",
+    posisi: r.posisi || "-",
+    outlet: r.outlet || "(Tidak diketahui)",
+    level: r.level || "Staff",
+    spLevels: Array.isArray(r.spLevels) ? r.spLevels : (r.jenisSp ? [Number(r.jenisSp)] : []),
+    nominal: Number(r.nominal || r.totalSp || 0),
+    tanggal: r.tanggal || null,
+    alasan: r.alasan || "-",
+    sumber: r.sumber || "historis"
+  };
+}
+
+/* =========================================================
+   3) IMPOR DATA HISTORIS (satu kali)
+   ========================================================= */
+const HISTORIS_DATA = [{"id": "33240435", "nama": "Yosia Dave Natanael", "posisi": "Membership Consultant_StrideLatumenten", "outlet": "Stride Gym Latumenten", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 13 jan krn tdk menajalankan ketentuan follow up Bitrix secara berulang"}, {"id": "33240607", "nama": "Oesama Putra Afia", "posisi": "Personal Trainer FTLBKS", "outlet": "FTL Bekasi", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 10 jan krn pd tgl 29/11 pt conduct dengan member Michelle Pauline namun pada MAS member booking a.n Alicia Paula"}, {"id": "33250557", "nama": "Hafidz Bintang Al Khawarizmi", "posisi": "Membership Counsultant FTLPdBambu", "outlet": "FTL Pondok Bambu", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "SP 3 tgl 24 des krn memberikan surat sakit palsu"}, {"id": "332512047", "nama": "Syifa Amalia Azzahra", "posisi": "Membership Consultant_FTLAlamSutera", "outlet": "FTL Alam Sutera", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 5 jan krn terlambar setiap hari dan sudah direminder terus menurus"}, {"id": "33241168", "nama": "Trie Satrio", "posisi": "Personal Trainer_StrideBanceuy", "outlet": "Stride Gym Banceuy", "level": "Staff", "jmhSpRaw": "3 x 3", "spLevels": [3], "totalSp": 900000, "alasan": "SP 3 tgl 15 des krn PT melakukan sesi conduct Ani Karyani dan Lanny Suhendra namun di MAS hanya 1 bookingan ; pd tgl 5/12 telat datang selama 3 jam 52 menit ; pd tgl 7/12 telat datang selama 2 jam 34 menit"}, {"id": "33241256", "nama": "Muhamad Ardan Abdilla", "posisi": "Membership Consultant_FTLKemanggisan", "outlet": "FTL Kemanggisan", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 tgl 23 des krn tidak mengikuti SOP yg diberikan"}, {"id": "33250309", "nama": "Muhammad Oktama", "posisi": "Personal Trainer_StridePecenongan", "outlet": "Stride Gym Pecenongan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 22 des krn ambil libur/cuti tanpa info manager"}, {"id": "33241057", "nama": "Fharadiba Amayla Putri", "posisi": "Membership Consultant FTLSCBD", "outlet": "FTL SCBD", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 19 des krn selama 3 bln tidak ada progress performance, dan bln ini juga tidak ada kenaikan signifikan dan activitynya"}, {"id": "33250744", "nama": "Abdul Azis SCBD", "posisi": "Membership Consultant FTLSCBD", "outlet": "FTL SCBD", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 22 des krn menghambat proses termination member (lupa menyerahkan dok)"}, {"id": "33231112", "nama": "Rio Afriza Hidayat", "posisi": "Personal Trainer FTLCikarang", "outlet": "FTL Cikarang", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 tgl 18 des krn terlambat bekerja selama 6 jam 19 menit"}, {"id": "33250652", "nama": "Ricardo Dede Andika Tampubolon", "posisi": "Membership Consultant_FTLSawangan", "outlet": "FTL Sawangan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 22 des krn terlambat bekerja selama 2 jam 54 menit"}, {"id": "332508035", "nama": "Achmad Alviansyah Saputra", "posisi": "Personal Trainer FTLSCBD", "outlet": "FTL SCBD", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 18 des krn terlambat bekerja selama 3 jam"}, {"id": "332507108", "nama": "Adinda Salsabila", "posisi": "Customer Service_FTLPadjajaran", "outlet": "FTL Padjajaran Bogor", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 12 jan krn pd tgl 6 membiarkan FM Katon mengambil XPOSE tanpa langsung membayar. Namun FO mencatat pembelian XPOSE tsb dan sudah diposting ke tilltake"}, {"id": "33240624", "nama": "Dinda Salsabila Irawan", "posisi": "Facility Operational Manager FTL", "outlet": "FTL HO", "level": "Manager", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 600000, "alasan": "SP 3 tgl 12 jan krn terlambat mengirim informasi terkait barang hilang (Dyson) di loker pria puri"}, {"id": "33240904", "nama": "Akbar Farhan Suhaimi", "posisi": "Leader Customer Service_FTLSatrio", "outlet": "FTL Satrio", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 12 jan krn lalai tdk menjalankan SOP terkait dengan adanya akun spotify di Outlet Satrio"}, {"id": "33241283", "nama": "Rizal Septiana", "posisi": "Customer Service_FTLAhmadYani", "outlet": "FTL Ahmad Yani", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 2 jan krn FO Indra membiarkan PT Kiki Karsa scan barcode menggunakan HP dan akun member, sementara membernya rdk masuk gate"}, {"id": "33250347", "nama": "Indra Adi Cahya", "posisi": "Customer Service_FTLAhmadYani", "outlet": "FTL Ahmad Yani", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 2 jan krn FO Indra membiarkan PT Kiki Karsa scan barcode menggunakan HP dan akun member, sementara membernya rdk masuk gate"}, {"id": "332511052", "nama": "Darol Gideon Kowureng", "posisi": "Customer Service_FTLSCBD", "outlet": "FTL SCBD", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 2 jan krn terlambat 23 menit pd tgl 17 des"}, {"id": "332511130", "nama": "Revita Rizal Ananda", "posisi": "Customer Service_FTLAhmadYani", "outlet": "FTL Ahmad Yani", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 2 jan krn FO Indra membiarkan PT Kiki Karsa scan barcode menggunakan HP dan akun member, sementara membernya rdk masuk gate"}, {"id": "332509063", "nama": "Kiki Karsa Komara", "posisi": "Personal Trainer_FTLAhmadYani", "outlet": "FTL Ahmad Yani", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "SP 1 tgl 2 jan krn PT Kiki melakukan sesi conduct dengan member Ramzi Najwan tanpa bookingan ; SP 2 tgl 2 jan krn PT Kiki melakukan sesi conduct dengan member Tri Listyorini menggunakan akun member, sedangkan member aktual tdk datang dan conduct"}, {"id": "33241144", "nama": "Tyasyulisa Adisyah", "posisi": "Facility Operational Manager FTL", "outlet": "FTL HO", "level": "Manager", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 400000, "alasan": "SP 1 tgl 20 jan krn tdk aware terhadap tanaman di outlet Tambun"}, {"id": "332601042", "nama": "Nazwa Robiatul Adawiah", "posisi": "Customer Service_FTLAlamSutera", "outlet": "FTL Alam Sutera", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "SP 3 tgl 20 jan krn memalsukan surat sakit pd tgl 15/01/26"}, {"id": "33240805", "nama": "Hadyan Luthfi", "posisi": "Customer Service FTLTBT", "outlet": "FTL Tebet", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "SP 3 tgl 28 jan krn memalsukan surat sakit pd tgl 26/01/26"}, {"id": "332601041", "nama": "Ulfa Putri Meliyani", "posisi": "Customer Service_FTLAlamSutera", "outlet": "FTL Alam Sutera", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 30 jan krn tdk mengangkat panggilan telepon dari pihak audit saat dihubungi"}, {"id": "33250407", "nama": "Yusuf Sabbaha Rosadi", "posisi": "Customer Service FTLPd Bambu", "outlet": "FTL Pondok Bambu", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 30 jan krn tdk terjadi kesalahan posting F&B, yg seharusnya menggunakan QR BRI Statis, namun FO melakukan posting EDC BRI"}, {"id": "332511099", "nama": "Muhammad Rosyik", "posisi": "Teknisi Sipil FTLHO", "outlet": "FTL HO", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn ada kesalahan metode pekerjaan"}, {"id": "33241160", "nama": "Amal Fatur Kamali", "posisi": "Teknisi Alat FTLHO", "outlet": "FTL HO", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn tdk ada kabar selama 2 hari dari tgl 31 jan - 1 feb"}, {"id": "332510058", "nama": "Farah Diba Rezi Fauziah", "posisi": "Customer Service_FTL.PdIndah", "outlet": "FTL Pondok Indah", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 19 feb krn mengirimkan rekaman cctv ke member melalui WA"}, {"id": "332511114", "nama": "Rahmad Fauzi", "posisi": "Customer Service FTLGunungSahari", "outlet": "FTL Gunung Sahari", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "SP 1 tgl 19 feb krn Telat melakukan settlement EDC BRI transaksi tgl 15 Feb, dan baru di settlement tgl 16 Feb 2025 ; SP 2 tgl 19 feb krn Menghilangkan mastercard loker cowo dan tidak ada perizinan penggunaan mastercard"}, {"id": "332512086", "nama": "Yossy Nadea Agatta", "posisi": "Customer Service_StrideGadTim", "outlet": "Stride Gading Timur", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 3 feb krn Temuan Audit - FO memutar Musik tidak sesuai dengan Playlist FTL"}, {"id": "33230404", "nama": "Dinda Oktavianti", "posisi": "Leader Customer Service_FTLDepokMas", "outlet": "FTL Depok Mas", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 tgl 4 feb krn FO meletakan barang lost n found tidak sesuai pada tempatnya"}, {"id": "33250542", "nama": "Abdul Rohman", "posisi": "Leader Customer Service_FTLKotaBaruParahyangan", "outlet": "FTL Kota Baru Parahyangan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 27 feb krn melakukan aktivitas yg tdk sesuai dengan prosedur pemeriksaan kebersihan"}, {"id": "33241255", "nama": "Muhammad Aditya Putra", "posisi": "Customer Service_StrideGadTim", "outlet": "Stride Gading Timur", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 27 feb krn overbreak pada jam 06:33 dan tdk stanby lagi sampai pulang pd tgl 16,17,18"}, {"id": "332510107", "nama": "Ines Tri Agnesia", "posisi": "Customer Service_FTL.PdIndah", "outlet": "FTL Pondok Indah", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 27 feb krn melempar air le mineral saat mengisi chiller ke arah MC Deldi"}, {"id": "332509077", "nama": "Aditya Putra Pratama", "posisi": "CustomerService_FTLMampang", "outlet": "FTL MAMPANG", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 27 feb krn FO tdk flooring cek kebersihan dan mengisi checklist kebersihan pd tgl 5/2"}, {"id": "332601089", "nama": "Adam Saputra", "posisi": "CustomerService_FTLMampang", "outlet": "FTL MAMPANG", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 27 feb krn FO tdk flooring cek kebersihan dan mengisi checklist kebersihan pd tgl 5/2"}, {"id": "332512063", "nama": "Anisah Barokah", "posisi": "CustomerService_FTLMampang", "outlet": "FTL MAMPANG", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 27 feb krn FO tdk flooring cek kebersihan dan mengisi checklist kebersihan pd tgl 5/2"}, {"id": "332509075", "nama": "Zahra Amelia", "posisi": "CustomerService_FTLMampang", "outlet": "FTL MAMPANG", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 tgl 27 feb krn FO tdk flooring cek kebersihan dan mengisi checklist kebersihan pd tgl 5/2"}, {"id": "33250445", "nama": "Alma Apriyati Try Junur", "posisi": "Customer Service_FTLCibubur", "outlet": "FTL Cibubur", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 27 feb krn pd tgl 13/1 melakukan UL tanpa persetujuan Leader FO dan FCM sehingga mempersulit FO lain"}, {"id": "332511087", "nama": "Achmad Roychan Ramadhan Ridwan Putra", "posisi": "Customer Service_FTLAR", "outlet": "FTL AR Hakim", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "SP 1 tgl 3 feb krn Pada tanggal 3 Februari 2026, tidak datang pada shift yang ditentukan dan tidak memberikan info\nkepada atasan yang bersangkutan ; SP 2 tgl 3 feb krn Tidak melakukan settlement pada tanggal 3 Februari 2026"}, {"id": "332511086", "nama": "Amalia Ramadhani Rachmad", "posisi": "Leader Customer Service_FTLAR", "outlet": "FTL AR Hakim", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 16 feb krn FO incharge tanpa menggunakan make up, sebelumnya sudah ditegur sebanyak 3x"}, {"id": "332511096", "nama": "Clarissa Aurellia Effendy", "posisi": "Customer Service_FTLAR", "outlet": "FTL AR Hakim", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "SP 3 tgl 4 feb krn memanipulasi timestamp untuk check list kebersihan"}, {"id": "332511089", "nama": "Filipo Exel Deagi", "posisi": "Customer Service_FTLAR", "outlet": "FTL AR Hakim", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 tgl 2 feb krn terlambat bekerja selama 2 jam 34 menit"}, {"id": "20090740", "nama": "Nine Deisel Christian Kambey", "posisi": "Personal Trainer", "outlet": "FTL - Tanjung Duren", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 9 Februari, PT mengajar member atas nama Darwin Satio (1049965) tidak sesuai dengan ketentuan booking dan dilatih secara gabung dengan member lain. Member booking 19:00-20:00  tetapi aktualnya member latihan dari pukul 18:24-20:54 (1 jam 30 menit)"}, {"id": "20092331", "nama": "Ahmad Faisal", "posisi": "Member Consultant", "outlet": "FTL - Puri", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 8 Februari 2026, MC Ahmad Faisal Telat 1 Jam 10 Menit. Schedule jam 12:00, Absen GreatDay jam 13:10."}, {"id": "20092660", "nama": "Aloysius Avian Darmanto", "posisi": "Member Consultant", "outlet": "FTL - Green Garden", "level": "Staff", "jmhSpRaw": "1 & 3", "spLevels": [1, 3], "totalSp": 400000, "alasan": "Pada 29 Januari 2026 MC Avian schedule jam 10:00 namun baru memasuki outlet jam 15:55 (telat 5 jam 55 menit) ; Temuan Audit, Pada 23 Januari 2026, MC Avian shift jam 10:00 tidak standby di outlet selama 3 jam 9 menit (12:53 - 15:02)."}, {"id": "33240124", "nama": "Yarin Ramadanti", "posisi": "Personal Trainer", "outlet": "FTL - Green Garden", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit, Pada 20 Januari, PT Yarin mematikan AC (mendorong Fan)."}, {"id": "33240135", "nama": "Mega Putri Lusiana Sirait", "posisi": "Personal Trainer", "outlet": "FTL - Depok Lama", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada 15 Januari 2026, PT Mega P L Siragit memanipulasi timestamp claim conduct dengan member DIANA ASTARI (79093) (member memiliki conduct jam 17:00, namun baru sampai jam 17:50. Lanjut mengobrol dengan PT sampai 18:03, dan latihan sendiri lalu pulang jam 19:46. PT memiliki conduct di jam 18:00-21:00)."}, {"id": "33240223", "nama": "Faiz Gusnanda", "posisi": "Member Consultant", "outlet": "Stride - Latumenten", "level": "Manager", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 600000, "alasan": "Overbreak selama 2 jam 9 menit pada tanggal 19 Januari 2026."}, {"id": "33240615", "nama": "Mochamad Fajar Risman", "posisi": "Member Consultant", "outlet": "FTL - Puri", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "Pada tanggal 7 Februari 2026, MC Fajar Risman Telat 2 Jam 4 Menit. Schedule jam 10:00, Absen GreatDay jam 12:04."}, {"id": "33240704", "nama": "Geugeut Nenda", "posisi": "Personal Trainer", "outlet": "FTL - Cikarang", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit, Pada 26 Januari, PT Geugeut memanipulasi Timestamp claim conduct dengan member SITI MARYAMAH (1013745), (timestamp jam 13:07 namun aktual conduct latihan jam 15:13)."}, {"id": "33240776", "nama": "Michael Kawihardja", "posisi": "Member Consultant", "outlet": "FTL - Satrio", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada 19 Januari 2026, MC Michael mengubah status Issue Utama leads bitrix menjadi Spam (untuk leads yang bukan chat spam) pada leads 3670705, 3687793, dan 392069."}, {"id": "33240788", "nama": "Firman Ramdani Mail Kurniawan", "posisi": "Personal Trainer", "outlet": "FTL - Puri", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "PT tersebut tidak mencapai SOB"}, {"id": "33240814", "nama": "Haria Sukisna", "posisi": "Personal Trainer", "outlet": "FTL - Puri", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "PT tidak mencapai target SOB"}, {"id": "33240863", "nama": "Andry Ankhry Ramdani", "posisi": "Personal Trainer", "outlet": "FTL - Dago", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Lalai dalam memeriksa schedule bekerja pada tanggal 18 Februari 2026, sehingga terlambat datang bekerja."}, {"id": "33241168", "nama": "Trie Satrio", "posisi": "Personal Trainer", "outlet": "Stride - Banceuy", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "Member memberikan complain terkait PT yang selalu terlambat hadir saat PT session."}, {"id": "33241214", "nama": "Raden Azka Yudaprawira", "posisi": "Personal Trainer", "outlet": "FTL - Ahmad Yani", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Terlambat datang bekerja pada tanggal 20 Januari 2026, on schedule jam 10.00 dan tiba jam 11.20"}, {"id": "33250160", "nama": "Juan Michael", "posisi": "Front Office", "outlet": "FTL - Benhil", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "terlambat masuk kerja selama 27 menit pd tgl 7 feb dan 13 menit pd 14 Feb ; tidak masuk tanpa pemberitahuan dan izin ke FCM atau tim lainnya pada tgl 3 Maret, sehingga membuat shift berantakan"}, {"id": "33250243", "nama": "Rizki Octavian Eloran", "posisi": "Member Consultant", "outlet": "FTL - Puri", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada 21 Januari 2026, MC Rizki Tidur di loker staff selama 35 menit saat bertugas di shift pagi (jam masuk 06:00) sehingga tidak ada MC yang standby di Lounge."}, {"id": "33250266", "nama": "Deni Dania Saputra", "posisi": "Member Consultant", "outlet": "FTL - Tebet", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tidak hit SOB dan KPI selama 3 bulan, bulan januari pencapaian di 5.374 Point sedangkan SOB 12.500 Point, delta 7.126 Point. hal ini sudah diinfokan ke area manager."}, {"id": "33250382", "nama": "Muhammad Ferdy Akbar", "posisi": "Personal Trainer", "outlet": "FTL - Pasir Koja", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Melakukan conduct member tetapi tidak sesuai dengan prosedur yang berlaku pada tanggal 4 Februari 2026."}, {"id": "33250473", "nama": "Valentino Rossi Salim Kleb", "posisi": "Personal Trainer", "outlet": "FTL - KBP", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Kelalaian memberikan informasi bahwa tidak dapat hadir kepada member pada tanggal 31 Januari 2026."}, {"id": "33250603", "nama": "Bima Aminulah", "posisi": "Personal Trainer", "outlet": "FTL - Depok Lama", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "Pada 14 Januari 2026, PT Bima Aminulah Telat 1 Jam 1 Menit. Schedule jam 06:00, PT Absen GD jam 07:01. ; Pada 12 Januari 2026, PT Bima Aminulah Telat 2 Jam 53 Menit. Schedule jam 12:00, PT Absen GD jam 14:53"}, {"id": "33250626", "nama": "Lingga Archie Christianto", "posisi": "Sales Manager", "outlet": "FTL - Green Garden", "level": "Manager", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 200000, "alasan": "Tidak bisa handle masalah dioutlet dengan baik dan benar"}, {"id": "33250631", "nama": "Deldi Anto", "posisi": "Member Consultant", "outlet": "FTL - Pondok Indah", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit - Attitude - MC Deldi melempar Bath Towel kotor ke kepala FO Ines dan menendang air mineral stock chiller"}, {"id": "33250652", "nama": "Ricardo Dede Andika Tampubolon", "posisi": "Member Consultant", "outlet": "FTL - Sawangan", "level": "Staff", "jmhSpRaw": "1 & 3", "spLevels": [1, 3], "totalSp": 400000, "alasan": "5 temuan bahwa MC tidak merespons leads yang sudah diberikan dalam kurun waktu 1x24 jam ; Temuan Audit, MC tidak merespon leads yang diberikan 1x24 jam"}, {"id": "33250746", "nama": "Ira Pratiwi", "posisi": "Member Consultant", "outlet": "FTL - Gubeng", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada 26 Januari 2026, MC Ira Telat 1 Jam 21 Menit. Schedule jam 06:00, MC Tiba di Outlet jam 07:21."}, {"id": "33250771", "nama": "Prima Devari Panggoaran M", "posisi": "Member Consultant", "outlet": "FTL - Galaxy", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 05 Februari 2026 MC Prima Devari shift jam 12:00 baru memasuki outlet jam 13:02 (telat 1 jam 2 menit)"}, {"id": "332508017", "nama": "Rika Widiasti Cahyani", "posisi": "Member Consultant", "outlet": "FTL - Blok M", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "Pada 24 Januari, MC Rika telat 1 Jam 8 Menit. Schedule jam 06:00, Absen GreatDay jam 07:08."}, {"id": "332508039", "nama": "Muhammad Reva", "posisi": "Personal Trainer", "outlet": "FTL - Puri Depok Mas", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada 24 Januari, PT Muhammad Reva telat 1 Jam 21 Menit. Schedule jam 06:00, Absen GreatDay jam 07:21."}, {"id": "332508059", "nama": "Gilang Aji Pratama", "posisi": "Member Consultant", "outlet": "FTL - Merdeka", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Terlambat datang bekerja pada tanggal 23 Januari 2026. On schedule jam 10.00 dan tiba jam 11.04"}, {"id": "332508088", "nama": "Laetitia Karenina", "posisi": "Member Consultant", "outlet": "FTL - Kerobokan", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "MC mangkir dari jadwal yang telah ditetapkan pada Sabtu, 21 Feb. ybs seharusnya bertugas opening pukul 06.00 WITA di Teuku Umar, namun tidak hadir tanpa pemberitahuan kpd manager. Hal tsb mengganggu operasional pagi di Teuku Umar krn banyak appointment yang terbengkalai dan walk-in yang tidak tertangani. ; Case 1: MC melakukan input membership milik FO Teuku Umar ke sistem Horizon Kerobokan tanpa izin.Case 2: MC menginput calon member titipan FTL Pondok Bambu ke Horizon Kerobokan tanpa pemberitahuan atau koordinasi sebelumnya."}, {"id": "332509002", "nama": "Richard Theofilus Tirtha Rahardja", "posisi": "Fitness Manager", "outlet": "FTL - Teuku Umar", "level": "Manager", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 200000, "alasan": "Pada tanggal 12 Februari, FM Richard melakukan manual booking conduct PT untuk member atas nama Lutfi Hani Saputri (1057955) tanpa melakukan pemberitahuan kepada tim audit."}, {"id": "332509036", "nama": "Yusuf  Andro Tjahya", "posisi": "Member Consultant", "outlet": "FTL - Cipondoh", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Melakukan pelanggaran karena seharusnya masuk jam 06.00 namun tidak ada kabar dan baru masuk mengabari 10.20 dengan alasan lupa schedule dan berangkat dari Pamulang"}, {"id": "332509039", "nama": "Sella Wahyuni Nurkartika", "posisi": "Member Consultant", "outlet": "FTL - Ciputra World Surabaya", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "6 Temuan bitrix MC pindah ke WhatsApp pribadi (MC chat via WA)"}, {"id": "332509058", "nama": "Arif Sugiarto", "posisi": "Personal Trainer", "outlet": "FTL - Bendungan Hilir", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tidak mengikuti meeting selama 2 hari berturut-turut, tidak mengerjakan activity yang sudah ditugaskan, telat masuk pada saat shift on duty"}, {"id": "332509095", "nama": "Elang Bramasta", "posisi": "Personal Trainer", "outlet": "FTL - A.R. Hakim", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "PT Elang menaruh barang barang pribadi di loker member walaupun membership staff nya sudah expired."}, {"id": "332509114", "nama": "Jundana Dzikru Tanzil", "posisi": "Personal Trainer", "outlet": "FTL - Soekarno Hatta", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "Terlambat datang bekerja pada tanggal 1 Februari 2026."}, {"id": "332510044", "nama": "Hafidz Okky Rahmawan", "posisi": "Member Consultant", "outlet": "FTL - Green Garden", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "Temuan Audit, Pada 23 Januari, MC Hafidz shift jam 12:00 Tidur diruang staff (16:31-17:03) dan keluar outlet terhitung 2 jam 40 menit (overbreak 1 jam 40 menit)."}, {"id": "332510046", "nama": "Joice Caroline Siahaan", "posisi": "Member Consultant", "outlet": "FTL - Depok Lama", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada 14 Januari 2026, MC Joice Caroline telat 1 Jam 25 Menit. Schedule jam 10:00, MC Absen GD jam 11:25."}, {"id": "332510050", "nama": "Verra Andriyani", "posisi": "Member Consultant", "outlet": "FTL - Galaxy", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada Tanggal 8 Februari, MC Verra Andriyani terlihat menggunakan PC ketika sedang Backup FO"}, {"id": "332510065", "nama": "Sopian Sopian", "posisi": "Member Consultant", "outlet": "FTL - Soekarno Hatta", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "Pada tanggal 9 Februari 2026 terlambat datang bekerja saat schedule jam 10.00. ; Pada tanggal 28 Januari 2026 terlambat datang bekerja saat schedule jam 06.00 tanpa konfirmasi ke manager."}, {"id": "332510068", "nama": "Tri Krisanti Putri Gulo", "posisi": "Member Consultant", "outlet": "FTL - Soekarno Hatta", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 9 Januari 2026 tidak masuk ke dalam Outlet melalui akses Gate, melainkan melalui samping Gate Padel."}, {"id": "332511025", "nama": "Muhamad Nur Taufiq Nugroho", "posisi": "Personal Trainer", "outlet": "FTL - Ciputra World Surabaya", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "4 Temuan tidak merespon leads yang diberikan dalam waktu 1x24 jam"}, {"id": "332511124", "nama": "Selly Ismeini  Mariam", "posisi": "Member Consultant", "outlet": "FTL - Ahmad Yani", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tidak merespon leads di Bitrix yang diberikan selama 1x24 jam"}, {"id": "332512005", "nama": "Ibnu Rasyid", "posisi": "Personal Trainer", "outlet": "FTL - Pamulang", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tidak mau menjalankan RA atau menjalankan aktifitas harian dan tidak mau menjalankan penugasan mendapatkan RA 5 perhari dan sudah berjalan dari tanggal 1 febuari sampai sekarang."}, {"id": "332512014", "nama": "Deski  Adelia", "posisi": "Personal Trainer", "outlet": "FTL - Ahmad Yani", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "Terlambat datang bekerja pada tanggal 14 Januari 2026 dengan schedule jam 06.00."}, {"id": "332512047", "nama": "Syifa Amalia Azzahra", "posisi": "Member Consultant", "outlet": "FTL - Alam Sutera", "level": "Staff", "jmhSpRaw": "1 , 2 & 3", "spLevels": [1, 2, 3], "totalSp": 600000, "alasan": "Pada tanggal 7 Februari, MC terlambat 2 jam 47 menit, dischedule pukul 06:00 namun datang pukul 08:47 ; Temuan Audit, MC tidak merespon Leads yang diberikan 1x24 Jam. ; Pada 19 Januari 2026, MC Syifa Telat 1 Jam 44 Menit. Schedule jam 08:00, MC Tiba di Outlet jam 09:44."}, {"id": "332512078", "nama": "Ashley Kaitlyn", "posisi": "Member Consultant", "outlet": "FTL - Gubeng", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada 23 Januari 2026, MC Ashley Telat 57 Menit. Schedule jam 06:00, MC Tiba di Outlet jam 06:57."}, {"id": "332512079", "nama": "Aditya Artha Lokaseputra", "posisi": "Member Consultant", "outlet": "FTL - Gubeng", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 2 Februari 2026 tidak membalas 18 leads bitrix lebih dari 24 jam"}, {"id": "332512102", "nama": "Alifia Rachma Naddilla", "posisi": "Member Consultant", "outlet": "FTL Pilates - Gading Serpong", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "1. Keterlambatan berulang dalam merespons chat bitrix\n2. Ketidaktepatan waktu kehadiran tanpa konfirmasi sebelumnya"}, {"id": "332601005", "nama": "Bayu Asmara", "posisi": "Personal Trainer", "outlet": "FTL - Mustika Jaya", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "Melakukan hal yang tidak pantas dengan FO (menyentuh area private dan memberi ajakan tidak pantas ke FO) PT juga keluar-masuk ke area FO pada tanggal 22 Januari"}, {"id": "332601023", "nama": "Muhamad Ivalio Iraz", "posisi": "Personal Trainer", "outlet": "Stride - Banceuy", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "Pada bulan Januari 2026 terlambat datang bekerja sebanyak 3x, tanggal 16,17 dan 21 Januari 2026. ; Terlambat datang bekerja pada tanggal 21 Januari 2026. On schedule  jam 06.00 dan tiba jam 08.26"}, {"id": "332601064", "nama": "Audia Mutmainah", "posisi": "Member Consultant", "outlet": "FTL - Green Lake City", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit, MC pindah ke WhatsApp Pribadi (MC Chat via WA)"}, {"id": "332601127", "nama": "Sulthan Al Adha", "posisi": "Member Consultant", "outlet": "FTL - Teuku Umar", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "MC tidak merespons leads yang diberikan dalam waktu 1×24 jam."}, {"id": "33241050", "nama": "Felicia Ribka Rashita", "posisi": "Leader Customer Service_FTLGreenGarden", "outlet": "FTL Green Garden", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 3 mar krn tdk update kartu member baru di log aminities ( tgl 1-25 feb tdk update)"}, {"id": "20091170", "nama": "Cindy Nur Alfiansih", "posisi": "Customer Service_FTLKemanggisan", "outlet": "FTL Kemanggisan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 25 mar krn pd tgl 9 mar kertas struk bri digunakan sebagai struk Fitscan"}, {"id": "332510074", "nama": "Febriansyah", "posisi": "Teknisi Sipil FTLHO", "outlet": "FTL HO", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 tgl 27 mar krn tdk memberikan keterangan ijin tidak masuk dan alasannya. Tidak info ke team leader dan manager"}, {"id": "332601035", "nama": "Akhmad Jumhari", "posisi": "Teknisi Sipil FTLHO", "outlet": "FTL HO", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 tgl 27 mar krn tidak masuk piket saat lebaran sesuai dengan jadwal dan ijin dadakan"}, {"id": "33250352", "nama": "Moh Bismar Bulgia Umadji", "posisi": "Customer Service FTLPd Bambu", "outlet": "FTL Pondok Bambu", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 tgl 27 mar krn bekerja tidak menggunakan seragam pd tgl 13/03"}, {"id": "33250464", "nama": "Muhammad Irvandri Nur Ridwan", "posisi": "Customer Service_FTLSoetta", "outlet": "FTL Soetta - Bdg", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 tgl 27 mar krn tidur di are"}, {"id": "33250112", "nama": "Adriruli Deriano", "posisi": "Personal Trainer_FTLPadjajaran", "outlet": "FTL Padjajaran Bogor", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn ada tanggal 13 Maret 2026, staff telat 2 Jam 54 Menit.\nSchedule jam 06:00, namun datang Jam 08:54."}, {"id": "332511003", "nama": "Agnes Sintauli Hutapea", "posisi": "Personal Trainer_FTLKotaBaruParahyangan", "outlet": "FTL Kota Baru Parahyangan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn erlambat datang bekerja pada tanggal 21 Maret 2026 saat schedule jam 06.00"}, {"id": "20092331", "nama": "Ahmad Faisal", "posisi": "Membership Consultant FTLPuri", "outlet": "FTL Puri Indah", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn tidak isi commit harian seminggu full di horizon."}, {"id": "332512102", "nama": "Alifia Rachma Naddilla", "posisi": "Membership Consultant_Pilates.GadSer", "outlet": "FTL Gading Serpong", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn temuan Audit, Pada 15 Februari 2026, staff Terlambat 1 Jam 46 Menit.\nSchedule masuk jam 08:00, namun baru sampai Outlet jam 09:46."}, {"id": "20092660", "nama": "Aloysius Avian Darmanto", "posisi": "Membership Consultant FTLGreenGarden", "outlet": "FTL Green Garden", "level": "Staff", "jmhSpRaw": "3 x 4", "spLevels": [3], "totalSp": 1200000, "alasan": "SP 3 krn Temuan Audit, Pada 23 Februari 2026, Staff Terlambat 5 Jam 4 Menit.\nTiba di Outlet jam 11:04 saat shift Jam 06:00 ; Pada tanggal 3 Maret - schedule 10:00, datang 12:36 (terlambat 2 jam 36 menit) dan 5 Maret - schedule 10:00, datang 12:07 (terlambat 2 jam 7 menit) ; Pada tanggal 7 Maret 2026, staff telat 1 Jam 11 Menit.\nSchedule jam 12:00, namun datang Jam 13:11 ; 3 Temuan bahwa staff tidak merespon leads yang diberikan 1x24 jam"}, {"id": "33240618", "nama": "Amirullah", "posisi": "Membership Consultant FTLPuri", "outlet": "FTL Puri Indah", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "SP 1 krn pada tanggal 3 Maret staff telat, tiba di outlet jam 10:04 saat shift jam 8 (telat 2 jam 4 menit) ; SP 2 krn 3 hari berturut turut tidak isi commit harian di horizon"}, {"id": "332508006", "nama": "Andrianto  Hendrawan", "posisi": "Outlet Manager_StrideBanceuy", "outlet": "Stride Gym Banceuy", "level": "Manager", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 600000, "alasan": "SP 3 krn Mengubah shift bekerja tanpa konfirmasi ke area manager pada tanggal 7 Maret 2026"}, {"id": "33250488", "nama": "Arief Gusna Harisyandya Yudha", "posisi": "Personal Trainer_FTLP.Koja", "outlet": "FTL Pasir Koja", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn terlambat datang bekerja pada tanggal 10 Maret 2026 saat schedule pukul 10.00."}, {"id": "33230910", "nama": "Billy Pettersen", "posisi": "Membership Consultan_FTLMampang", "outlet": "FTL MAMPANG", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tidak mengikuti intruksi atasannya dengan tidak mengindahkan teguran verbal dan mengulanginya lagi dan telat tidak sesuai ketentuan daily point yang dibuat kesepakatan bersama"}, {"id": "33240425", "nama": "Brian Sheiridhan", "posisi": "Membership Consultant FTLBenhil", "outlet": "FTL Benhil", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn telat masuk kerja yang seharusnya masuk pada jam 08.00 namun datang di jam 09.00"}, {"id": "20092515", "nama": "Cahaya Galuh Fardhani", "posisi": "Personal Trainer_FTLDepokMas", "outlet": "FTL Depok Mas", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn temuan Audit, Pada 20 Februari 2026, Staff Terlambat 2 Jam 16 Menit."}, {"id": "332601114", "nama": "Christian Andika Mamesah", "posisi": "Membership Consultant FTLCikarang", "outlet": "FTL Cikarang", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn 3 Temuan bahwa staff tidak merespon leads yang diberikan 1x24 jam"}, {"id": "33250605", "nama": "Desy Natalia Br Turnip", "posisi": "Personal Trainer_FTLDepokMas", "outlet": "FTL Depok Mas", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn temuan Audit, Pada 20 Februari 2026, Staff Terlambat 7 Jam 32 Menit."}, {"id": "332512023", "nama": "Dimas Ramadani Karo Karo", "posisi": "Personal Trainer_FTLDago", "outlet": "FTL DAGO", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn lalai dalam memastikan schedule bekerja pada tanggal 24 Maret 2026"}, {"id": "332601056", "nama": "Ditania Putri Handayani", "posisi": "Membership Consultant_Pilates.GadSer", "outlet": "FTL Gading Serpong", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn temuan Audit, Pada 23 Februari 2026, Terlambat 3 Jam 37 Menit."}, {"id": "332601016", "nama": "Efraim Melkianus Manuputty", "posisi": "Personal Trainer_StridePecenongan", "outlet": "Stride Gym Pecenongan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn staff menginap di outlet (musholla), dari 11 Maret jam 23:50 lalu bangun pada 12 Maret 06:32 dan mengajar conduct (peringkat 4/6)"}, {"id": "20092352", "nama": "Elprian Elprian", "posisi": "PT Manager FTL Pasar Minggu", "outlet": "FTL Pasar Minggu", "level": "Manager", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 200000, "alasan": "SP 1 krn melakukan manual booking conduct PT untuk member atas nama RACHEL MEGA (1051747) tanpa memberitahukan ke audit pada tanggal 27 Februari 2026"}, {"id": "33250777", "nama": "Emilia Balqis", "posisi": "Membership Consultant_FTLCibubur", "outlet": "FTL Cibubur", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn 8 Temuan bahwa staff tidak merespon leads yang diberikan 1x24 jam"}, {"id": "332511082", "nama": "Evan Tama Wahyudi", "posisi": "Outlet Manager_StrideLatumenten", "outlet": "Stride Gym Latumenten", "level": "Manager", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 200000, "alasan": "SP 1 melakukan manual booking conduct PT untuk member atas nama MICHELLE YOUNG JHONATAN (949744) tanpa pemberitahuan ke audit pada tanggal 23 Februari 2026."}, {"id": "332601061", "nama": "Fajrul Ulum", "posisi": "Membership Consultant_StridePecenongan", "outlet": "Stride Gym Pecenongan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn temuan Audit, Pada 18 Februari 2026, Staff Terlambat 1 Jam 5 Menit."}, {"id": "33230607", "nama": "Fanya May Rahma", "posisi": "Membership Consultant_FTL.PdIndah", "outlet": "FTL Pondok Indah", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn pada tanggal 3 Maret 2026 telat 3 jam 9 menit (shift jam 10:00). Baru memasuki outlet pada jam 13:09"}, {"id": "332511073", "nama": "Farhan Rizki Permana", "posisi": "Membership Consultant_FTLDepokMas", "outlet": "FTL Depok Mas", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 pada tanggal 11 Maret 2026, staff tidak Stand By di Jam Kerja."}, {"id": "332512041", "nama": "Farid Trikuncoro", "posisi": "Membership Consultant", "outlet": "FTL Bekasi", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn under perfomance, dan sudah coaching area manager"}, {"id": "332601055", "nama": "Fitria Alpitrah", "posisi": "Membership Consultan_FTLAgora", "outlet": "FTL Agora", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn staff tidak mengikuti SOP perusahaan, yaitu pulang di jam kerja tanpa konfirmasi ke manager."}, {"id": "332601067", "nama": "Galih Luhur Satrio", "posisi": "Membership Consultant_StridePecenongan", "outlet": "Stride Gym Pecenongan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn staff tidak mengikuti SOP perusahaan, yaitu pulang di jam kerja tanpa konfirmasi ke manager."}, {"id": "33231131", "nama": "Gilang Perdana", "posisi": "Personal Trainer FTLBenhil", "outlet": "FTL Benhil", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "SP 1 krn Pada hari Sabtu, 7 Maret 2026 Telat 1 jam pada saat shift dan sering keluar tanpa izin. ; SP 2 krn mengulangi kesalahan yang sama pada tanggal 5 maret 2026 Staff terlambat masuk Shift A namun masuk jam 08:00 dan kena temuan"}, {"id": "33240814", "nama": "Haria Sukisna", "posisi": "Personal Trainer FTLPuri", "outlet": "FTL Puri Indah", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn staff mangkir tidak masuk pada akhir bulan pada saat outlet sedang low season."}, {"id": "33250198", "nama": "Haryanto Haryanto", "posisi": "Personal Trainer_FTLGadingSunter", "outlet": "FTL Gading Sunter", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn pengajuan surat peringatan dikarenakan tidak HIT selama 2 bulan berturut2 dan sudah di beri penugasan namun tetap kurang dalam inisiatif bekerja dan tanggung jawab"}, {"id": "332508102", "nama": "Ibnu Muhammad Qoni Hamami Haswi", "posisi": "Membership Consultant_FTLPamulang", "outlet": "FTL Pamulang", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn pada tanggal 22 Maret 2026, Staff keluar Bersama MC atas nama Tiara Meninggalkan Outlet, Sehingga tidak ada MC yang StandBy di Outlet."}, {"id": "33240659", "nama": "Johan Carel Weydemuller", "posisi": "Personal Trainer FTLBenhil", "outlet": "FTL Benhil", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn keluar tanpa izin pada saat shift dengan durasi hampir 3 jam"}, {"id": "33241009", "nama": "Jordan Omar Husein", "posisi": "Outlet Manager_StridePecenongan", "outlet": "Stride Gym Pecenongan", "level": "Manager", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 600000, "alasan": "Mentransfer 5 leads bitrix dari MC Pecenongan ke CS (Rizki Saudia & Rhaka Siwi) tanpa koordinasi. Sehingga leads tidak tertagihkan ke MC dan mempengaruhi conversi leads. Leads 3907269, 3979977, 3985327, 3989809, 4014633 dan Mentransfer 1 leads bitrix dari MC Pecenongan ke MC Gunung Sahari tanpa koordinasi dengan tim CS. Sehingga leads tidak tertagihkan ke MC Pecenongan, melainkan ditagihkan ke MC Gunung Sahari. Leads 4059873 / Percakapan 4059569"}, {"id": "332601126", "nama": "Jumadi awal", "posisi": "Membership Consultant_FTLTeuku Umar", "outlet": "FTL Teuku Umar", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn pada tanggal 3 Maret, MC Jumadi Awal tercatat terlambat selama 1 jam 57 menit. Yang bersangkutan dijadwalkan masuk kerja pada pukul 06.00, namun baru hadir pada pukul 07.57"}, {"id": "332509114", "nama": "Jundana Dzikru Tanzil", "posisi": "Personal Trainer FTLSoetta", "outlet": "FTL Soetta - Bdg", "level": "Staff", "jmhSpRaw": "3 x 2", "spLevels": [2, 3], "totalSp": 600000, "alasan": "SP 3 krn terlambat datang bekerja pada tanggal 22 Februari 2026 saat schedule jam 10.00 dan Tidak absen melalui Greatday pada 22 Februari 2026"}, {"id": "332602100", "nama": "Machmud Arkani", "posisi": "Membership Consultan_FTLBlokM", "outlet": "FTL Blok M", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn 8 Temuan bahwa staff tidak merespon leads yang diberikan 1x24 jam"}, {"id": "33250380", "nama": "Mas Ilham Aprilian", "posisi": "Personal Trainer FTLBKS", "outlet": "FTL Bekasi", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "SP 1 krn Tidak mengikuti aturan dan menjalani activity yang diberikan manager dan sudah diketahui oleh Area Manager,sehingga pencapaian poin setiap bulan tidak sesuai SOB dan average yang dicapai hanya 1.200 point ; SP 2 krn Staff mangkir keluar outlet dari jam 10.30 dan tidak menginfokan ke manager. Tiba di outlet pada jam 16.00 dan tidak info ke manager."}, {"id": "332508066", "nama": "Meggy Priyahartadi", "posisi": "Membership Consultan_FTLSukajadi", "outlet": "FTL SUKAJADI", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn lalai dalam menjalankan tugas dan tanggung jawabnya, seperti tidak menjalankan Follow Up Leads Bitrix."}, {"id": "33240525", "nama": "Mochamad Danitra Septiana", "posisi": "Membership Consultan_FTLKerobokan", "outlet": "FTL Kerobokan", "level": "Staff", "jmhSpRaw": "1,2,3 x 3", "spLevels": [1, 2, 3], "totalSp": 1200000, "alasan": "SP 1 krn MC menginap di outlet pada tanggal 25 Maret mulai pukul 01.11 sampai dengan 07.39 WITA ; SP 2 krn Pada tanggal 24 Maret 2026, setelah menyelesaikan shift pada tanggal 23 Maret, staf MC tersebut menginap dan tidur di area lounge, kemudian bangun pada pukul 13.24 WITA ; SP 3 Pada tanggal 23 Maret, MC datang ke outlet pada pukul 04.25 WITA (jadwal shift pukul 13.00). MC kemudian beristirahat sejak pukul 08.00 hingga pukul 12.10, sementara pada saat tersebut terlihat aktivitas keluar-masuk member di area outlet ; Pada tanggal 17 Maret, MC terpantau beristirahat (Tidur) di area lounge kereta dan terlihat oleh member yang lalu-lalang. MC mulai beristirahat pada pukul 07.49 hingga pukul 12.15, serta belum dalam kondisi grooming ; MC Mochamad Danitra Septiana tercatat melakukan absensi di luar area outlet dengan jarak lebih dari 300 meter pada tanggal 6 Maret."}, {"id": "33241229", "nama": "Muhamad Fikri", "posisi": "Personal Trainer_FTLKemanggisan", "outlet": "FTL Kemanggisan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn tanggal 28 Februari,  staff melatih member a.n ADELINE KIRSTIE SUSANTO dan DIANA BACHTIAR dari 07:06-09:00 (1 jam 54 menit), tetapi member hanya membooking masing-masing 1 sesi"}, {"id": "33250126", "nama": "Muhamad Irgi", "posisi": "Personal Trainer_StrideLatumenten", "outlet": "Stride Gym Latumenten", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn tidak mengikuti training pada tanggal 6 maret dengan alasan sakit tetapi masih conduct dan tidak menyertakan surat sakit."}, {"id": "332602045", "nama": "Muhamad Naufal Abiyi", "posisi": "Personal Trainer_FTLDago", "outlet": "FTL DAGO", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn terlambat datang bekerja pada tanggal 30 Maret 2026 tanpa koordinasi dengan manager."}, {"id": "332508071", "nama": "Muhammad Giffary Hakim", "posisi": "Personal Trainer FTLPuri", "outlet": "FTL Puri Indah", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "SP 1 krn Pada tanggal 24 Maret 2026, staff tidak StandBy di Outlet.Dari Jam 10:14 - 15:55 (5 Jam 31 Menit) ; SP 2 krn Hilang pada saat jam shift dari jam 10 pagi dan kembali lagi jam 15.55. Dan staff tersebut shift A di jam 6 pagi"}, {"id": "332602066", "nama": "Nabela Marwa Fa'izah", "posisi": "Personal Trainer FTLCWS", "outlet": "FTL Ciputra World Surabaya", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "SP 1 krn Membuat janji sesi GO dengan member a/n DEVY WINARKO tanggal 23 Maret 2026, namun PT tersebut OFF tanpa konfirmasi ke Fitness Manager maupun ke member dan member tersebut sudah datang ke club pada hari-H ; SP 2 krn PT tidak menjalankan prosedur TnC sebelum transaksi sehingga member meminta refund"}, {"id": "33241117", "nama": "Nabilah Zahra", "posisi": "Membership Consultan_FTLPadjajaran", "outlet": "FTL Padjajaran Bogor", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 Pada tanggal 13 Maret 2026, Staff tertidur di Musholla."}, {"id": "332512009", "nama": "Navigo Fasa Alfitra", "posisi": "Personal Trainer FTLPdBambu", "outlet": "FTL Pondok Bambu", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "SP 1 krn Absen great day di luar lokasi outlet setelah tidak stand by di jam kerja sesuai schedule pada hari H lebaran ; SP 2 krn tidak stand by di jam shift sesuai dengan schedule pada hari H lebaran"}, {"id": "33240607", "nama": "Oesama Putra Afia", "posisi": "Personal Trainer FTLBKS", "outlet": "FTL Bekasi", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "SP 1 krn Pada tanggal 24 Maret 2026 staff 3 kali telat datang mengajar. Jam mengajar yang seharusnya adalah jam 10.00 namun datang di jam 10.30 ; SP 2 krn Selalu datang telat saat mengajar client dan selalu ber-alasan"}, {"id": "33250611", "nama": "Putri Irnawati", "posisi": "Personal Trainer FTLGalaxy", "outlet": "FTL Galaxy", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn pada 23 Februari 2026, Staff Memanipulasi time stamp conduct a.n YASMIN ZAHRANI AKBAR (57850)."}, {"id": "332601058", "nama": "Rafael Haysel", "posisi": "Membership Consultant FTLCIPUTAT", "outlet": "FTL Ciputat", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn telat 17 menit pada saat shift jam 6. Tidak ada info ke manager hingga jam 9."}, {"id": "332603002", "nama": "Rama doni", "posisi": "Membership Consultan_FTLKerobokan", "outlet": "FTL Kerobokan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Temuan Audit, MC tidak merespon leads yang diberikan dalam waktu 1x24 jam"}, {"id": "332508048", "nama": "Renaldo Setiawan", "posisi": "Personal Trainer FTLCiputat", "outlet": "FTL Ciputat", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "SP 1 krn Staff PT Ciputat a/n Renaldo Setiawan di karena kan tidak menjalankan tugas dengan baik perihal indisipliner pekerjaan (beberapa kali telat saat jam kerja) dan menjadi temuan audit atas keterlambatan tanpa ada nya informasi ke manager di tanggal 26 Februari 2026 serta tidak menjalankan penugasan dengan baik yang telah di berikan dari atasan ; SP 2 krn tidak masuk tanpa konfirmasi ke manager"}, {"id": "33240875", "nama": "Rizkia Agung  Dharmawan", "posisi": "Personal Trainer_FTLP.Koja", "outlet": "FTL Pasir Koja", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Terlambat datang bekerja pada tanggal 20 Februari 2026 saat schedule jam 10.00."}, {"id": "33240850", "nama": "Rohman Rohman", "posisi": "Membership Consultant FTLPuri", "outlet": "FTL Puri Indah", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 pada tanggal 4 Maret 2026 Staff telat, tiba di outlet jam 09:51 saat shift jam 8 (telat 1 jam 51 menit)"}, {"id": "332508028", "nama": "Satria Asep Ginanjar", "posisi": "Membership Consultant", "outlet": "FTL Tanjung Duren", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn 6 Temuan staff tidak merespon leads yang diberikan 1x24 jam"}, {"id": "332601033", "nama": "Satria Wibawa", "posisi": "PT Manager FTLSukajadi", "outlet": "FTL SUKAJADI", "level": "Manager", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 600000, "alasan": "SP 1 krn Lalai dalam controlling transaction dan tidak diinput dari tanggal 25 Februari hingga 2 Maret ; SP 2 krn Melakukan manual booking conduct PT tanpa koordinasi dengan Divisi Audit pada tanggal 26 Februari 2026."}, {"id": "33240236", "nama": "Sekar Dwi Novelia Putri", "posisi": "Membership Consultan_FTLPadjajaran", "outlet": "FTL Padjajaran Bogor", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 13 Maret 2026, staff tertidur di Musholla. Tidur dari Jam 14:00 - 15:00 (1 Jam)."}, {"id": "33250773", "nama": "Tiara Silviana Bahri", "posisi": "Membership Consultant_FTLPamulang", "outlet": "FTL Pamulang", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Pada tanggal 22 Maret 2026, staff Keluar bersama MC atas nama Ibnu Meninggalkan Outlet, Sehingga tidak ada MC yang StandBy di Outlet.Keluar Outlet dari Jam 14:35 - 17:29 (2 Jam 54 Menit)."}, {"id": "33241168", "nama": "Trie Satrio", "posisi": "Personal Trainer_StrideBanceuy", "outlet": "Stride Gym Banceuy", "level": "Staff", "jmhSpRaw": "3 x 2", "spLevels": [2, 3], "totalSp": 600000, "alasan": "SP 3 krn Terlambat datang bekerja pada tanggal 27 Februari 2026 saat schedule jam 06.00 ; Terlambat datang bekerja pada tanggal 26 Februari 2026 saat schedule jam 06.00"}, {"id": "332510050", "nama": "Verra Andriyani", "posisi": "Membership Consultant FTLGalaxy", "outlet": "FTL Galaxy", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn temuan Audit, Pada 22 Februari 2026, staff telat di shift opening 06:00 baru datang di jam 07:30 ( telat 1 jam 30 menit)"}, {"id": "332509045", "nama": "Wahyu Pramudia", "posisi": "Personal Trainer_FTLAlamSutera", "outlet": "FTL Alam Sutera", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Staff melakukan beberapa indisipliner: keluar di jam shift terlalu lama (lebih dari 1 jam), tidak mematuhi instruksi management untuk stand by di club, dan beberapa pemangkiran lainnya."}, {"id": "33240736", "nama": "Yudhi Kusumawardani", "posisi": "Personal Trainer_FTLGadingSunter", "outlet": "FTL Gading Sunter", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn terjadi complaint pada client mengenai jadwal latihan yang kurang profesional."}, {"id": "332508053", "nama": "Yuliany Sartika", "posisi": "Personal Trainer FTLPdBambu", "outlet": "FTL Pondok Bambu", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "SP 1 krn 1. Under perform dari average selama 3 bulan terakhir (Desember-januari-Februari)\n2. Tidak menjalankan flow dan tugas yang diberikan oleh Fitness Manager ; SP 2 krn Under perform dari average selama 3 bulan terakhir (desember-januari-februari)"}, {"id": "33250774", "nama": "Yuliawanti", "posisi": "Membership Consultant_FTLSatrio", "outlet": "FTL Satrio", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 17 Maret 2026, staff tertidur di Lounge Outdoor dan dilihat oleh semua Member yang lalu lalang.Tidur dari Jam 08:49 - 11:05 (2 Jam 16 Menit)."}, {"id": "33231113", "nama": "Zuffi Adil", "posisi": "Personal Trainer FTLGalaxy", "outlet": "FTL Galaxy", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn 2 bulan berturut turut januari dan februari tidak hit SHARE OF BUDGET. bahkan jauh dari pencapaian normal, PT conduct juga sangat rendah kategorinya. dan tidak punya MBP yg masuk akal, Staff sering kali telat incharge. sudah pernah di coaching"}, {"id": "33241144", "nama": "Tyasyulisa Adisyah", "posisi": "Facility Operational Manager FTL", "outlet": "FTL HO", "level": "Manager", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 600000, "alasan": "SP 3 krn Slow response terhadap member terkait case kehilangan barang di area loker FTL Cibubur"}, {"id": "33250712", "nama": "Ratu Olivia", "posisi": "Customer Service_FTLSCBD", "outlet": "FTL SCBD", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tidak mengisi barang masuk di Log F&B. Cooltime tanggal 10 Feb"}, {"id": "33250246", "nama": "Eriec Chandra Dinata", "posisi": "Customer Service_FTLSCBD", "outlet": "FTL SCBD", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn 2x Tidak mengisi barang masuk di Log F&B. Xpose tanggal 11 Feb & Xpose tanggal 16 Feb"}, {"id": "332602075", "nama": "Dini Fahmianita", "posisi": "Front Office", "outlet": "FTL - Kerobokan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Kurangnya koordinasi dengan FCM terkait pengelolaan inventaris outlet."}, {"id": "332602074", "nama": "Alyandra Naomi", "posisi": "Front Office", "outlet": "FTL - Kerobokan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Kurangnya koordinasi dengan FCM terkait pengelolaan inventaris outlet."}, {"id": "33250728", "nama": "Muhammad Raihan Bagas Prihantoro", "posisi": "Front Office", "outlet": "FTL - Blok M", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tidak posting POS sesuai transaksi item"}, {"id": "332511093", "nama": "Nick Samudra", "posisi": "Front Office", "outlet": "FTL - Gubeng", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Membuat BA Tilltake tanpa sepengetahuan Leader FO dan FCM dan membuat e-sign tanpa persetujuan FCM"}, {"id": "332511095", "nama": "Belia Aisyia Putri Hakim", "posisi": "Front Office", "outlet": "FTL - Gubeng", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Membuat BA Tilltake tanpa sepengetahuan Leader FO dan FCM dan membuat e-sign tanpa persetujuan FCM"}, {"id": "33250548", "nama": "Wahyu Firmansyah", "posisi": "Front Office", "outlet": "FTL - Merdeka", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Lalai dalam mengerjakan tanggung jawab yang baru dikerjakan pada saat pelaksanaan Stock Opname pada 1 April 2026"}, {"id": "332512072", "nama": "Mauzha Chesa Putra Amsar", "posisi": "Front Office", "outlet": "FTL - Tanjung Duren", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Memasuki Gate melalui pintu tralis samping Gate pada tanggal 01 April 2026"}, {"id": "332511090", "nama": "Stevanus Wahyudianto  Prabowo", "posisi": "Front Office", "outlet": "FTL - A.R. Hakim", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Jam kerja kurang dari 9 jam  pada tanggal 1 April : absen GD 14:28 - 23:29 - total incharge diarea FO 8 jam 21 menit"}, {"id": "332508099", "nama": "Ahmad Zidane", "posisi": "Front Office", "outlet": "FTL - Puri", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Tidak melakukan SOP pengecekan loker saat terjadi kehilangan barang"}, {"id": "33241255", "nama": "Muhammad Aditya Putra", "posisi": "Front Office", "outlet": "Stride - Gading Timur", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Attitude yang kurang baik"}, {"id": "33240311", "nama": "Virda Ayu Awaliyah", "posisi": "Front Office", "outlet": "FTL - Cireundeu", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tidak menginformasikan kedatangan Dinas Kesehatan"}, {"id": "33250157", "nama": "Gina Aprilia Puspitasari", "posisi": "Front Office", "outlet": "FTL - Cireundeu", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tidak menginformasikan kedatangan Dinas Kesehatan"}, {"id": "33250663", "nama": "Dina Monica  Putri", "posisi": "Front Office", "outlet": "Stride - Banceuy", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Kejadian tanggal 5 April 2026, yang bersangkutan tidak menjalankan tanggung jawab (in charge dengan baik) karena tidak standby secara full, kurang aware terhadap kondisi area, dan beberapa kali tertidur saat jam kerja."}, {"id": "332601034", "nama": "Hanna Fadhillah", "posisi": "Facility", "outlet": "FTL - Head Office", "level": "Manager", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 200000, "alasan": "SP 1 krn Tidak mengedukasi FO untuk melakukan SOP pengecekan loker bila terjadi kehilangan barang di area loker."}, {"id": "33250658", "nama": "Muhammad Reyhan Rivaldy", "posisi": "Front Office", "outlet": "FTL - Kemanggisan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Meminta staff untuk memindahkan mobil"}, {"id": "33250343", "nama": "Siti Savirah", "posisi": "Front Office", "outlet": "FTL - Tanjung Duren", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Membawa mobil ke outlet"}, {"id": "33240723", "nama": "Irfan Nur Rasyid", "posisi": "Front Office", "outlet": "FTL - Kalimalang", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "SP 3 krn Tidak keliling untuk checklist kebersihan pada tanggal 10 dan 12 April 2026"}, {"id": "33241207", "nama": "Veyola Kezzia Lantu", "posisi": "Front Office", "outlet": "FTL - Merdeka", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tanggal 11 April 2026 melanggar aturan yakni menyimpan tas dan jaket pribadi di FO Station."}, {"id": "33250321", "nama": "Ismi Nurul Hasanah", "posisi": "Front Office", "outlet": "Stride - Banceuy", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tanggal 11 April 2026 lalai dalam melaksanakan kewajiban untuk izin dan report penggunaan master card loker."}, {"id": "33240713", "nama": "Rizan Hasanurdin", "posisi": "Front Office", "outlet": "Stride - Latumenten", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tidak menegur satpam yang tidur didalam outlet sehingga terjadi pencurian di parkiran motor pada 20 April 2026"}, {"id": "33240418", "nama": "Parhan Nurjaman", "posisi": "Front Office", "outlet": "FTL - Cikarang", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tidak melakukan penggeledahan secara langsung ketika menerima info bahwa terjadi kehilangan pada area loker cowok pada 22 April 2026"}, {"id": "33250407", "nama": "Yusuf Sabbaha Rosadi", "posisi": "Front Office", "outlet": "FTL - Rawamangun", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Telat melakukan settlement EDC Mandiri transaksi tgl 08 April, dan baru di settlement tgl 09 April 2025"}, {"id": "332602013", "nama": "Muhamad Bachtiar Rifai", "posisi": "CustomerService_FTLPamulang", "outlet": "FTL Pamulang", "level": "Staff", "jmhSpRaw": "1,2 & 3", "spLevels": [1, 2, 3], "totalSp": 600000, "alasan": "SP 1 krn memarkir mobil di parkiran outlet 9 jam 23 menit pd tgl 18 april ; SP 1 krn memarkir mobil di parkiran outlet 9 jam 13 menit pd tgl 18 april ; SP 1 krn memarkir mobil di parkiran outlet 1 jam 28 menit pd tgl 18 april"}, {"id": "332510019", "nama": "Hasna Nursifa Alfazri", "posisi": "Customer Service FTLPasirKoja", "outlet": "FTL Pasir Koja", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn menaruh barang di dalam loker member tgl 20 april"}, {"id": "332511044", "nama": "Aan Hidayat", "posisi": "Personal Trainer", "outlet": "FTL - Pamulang", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 17 April, PT Aan telat, tiba di oulet jam 08:11 saat shift jam 06:00 (telat 2 jam 11 menit)"}, {"id": "332603067", "nama": "Achmad Daris Fadilah", "posisi": "Member Consultant", "outlet": "FTL - Kemanggisan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 5 April, staff telat 52 menit, tiba di outlet jam 06:52 saat shift jam 06:00"}, {"id": "332509001", "nama": "Achmad Saefulloh", "posisi": "Sales Manager", "outlet": "FTL - Sawangan", "level": "Manager", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 200000, "alasan": "SP 1 krn Tidak masuk bekerja dan tidak ada kabar pada tanggal 1 dan 2 Maret 2026."}, {"id": "332512079", "nama": "Aditya Artha Lokaseputra", "posisi": "Member Consultant", "outlet": "FTL - Gubeng", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Tidak melakukan close book sebanyak 9 guest selama bulan Maret 2026"}, {"id": "332603015", "nama": "Aditya Pratama Maulana", "posisi": "Personal Trainer", "outlet": "FTL - Pasir Koja", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tanggal 10 April 2026 terlambat datang bekerja (1 jam 16 menit) saat schedule jam 12.00"}, {"id": "332508032", "nama": "Afifah Mahkota Putri", "posisi": "Member Consultant", "outlet": "FTL - SCBD", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 8 April 2026, MC Afifah Tiduran di Lounge Kereta selama 54 menit (14:02 - 14:56)"}, {"id": "332510038", "nama": "Ahmad Sapril", "posisi": "Member Consultant", "outlet": "FTL - Puri Depok Mas", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Staff tidak merespon leads yang diberikan 1x24 jam"}, {"id": "332601068", "nama": "Ajeng Endar Larasati", "posisi": "Member Consultant", "outlet": "FTL - Ciputat", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Memalsukan Surat Sakit"}, {"id": "332510041", "nama": "Alfiza Winda Maharani", "posisi": "Member Consultant", "outlet": "FTL - Bekasi Timur", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 9 April 2026, MC Winda Telat 1 Jam 27 Menit. Schedule jam 06:00, MC Datang Jam 07:27."}, {"id": "20092660", "nama": "Aloysius Avian Darmanto", "posisi": "Member Consultant", "outlet": "FTL - Green Garden", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "SP 3 krn Staff tidak merespon leads yang diberikan 1x24 jam"}, {"id": "33241021", "nama": "Anggi Reskiani", "posisi": "Call Center", "outlet": "FTL - Head Office", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Terlambat In charge/Duty sebanyak 14 hari"}, {"id": "20092362", "nama": "Annisaa Intan Safitri", "posisi": "Personal Trainer", "outlet": "FTL - Rawamangun", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 20 April 2026, PT Annisaa memasuki Gate dengan menggunakan Tap Out Gate"}, {"id": "33240780", "nama": "Davara Cahya Alamanda", "posisi": "Personal Trainer", "outlet": "FTL - Depok Lama", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Staff membiarkan member menggendong dirinya pada saat mengajar sembari merekam video lalu di up ke sosial media (instagram). Orang tua dari member tidak terima akan hal tersebut karena melanggar kode etik profesional dalam bekerja."}, {"id": "33250632", "nama": "Destiana Putri Arieftha", "posisi": "Member Consultant", "outlet": "FTL - Kemanggisan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Temuan audit W2, MC tidak merespon leads yang diberikan 1x24 jam"}, {"id": "33250428", "nama": "Desy Muliawati", "posisi": "Member Consultant", "outlet": "Stride - Banceuy", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Terlambat datang bekerja pada tanggal 4 April 2026, saat schedule jam 07.00."}, {"id": "332603074", "nama": "Diko Anand Prasetyomo", "posisi": "Member Consultant", "outlet": "FTL - Pamulang", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn 1. 2x mendapatkan temuan MC ( tidak menutup guest book tgl 23 march & temuan bitrix tgl 15 April 26 )\n2. Lack of activity BR ( BR March hanya 1 dan BR April hanya 4 ) \n   sudah diminta untuk mencari BR namun tidak dijalankan"}, {"id": "332512023", "nama": "Dimas Ramadani Karo Karo", "posisi": "Personal Trainer", "outlet": "FTL - Dago", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Terlambat datang bekerja pada tanggal 24 Maret 2026, saat schedule jam 06.00."}, {"id": "332602041", "nama": "Doni Purna Irawan", "posisi": "Personal Trainer", "outlet": "FTL - Bendungan Hilir", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Selalu terlambat dalam Jam Shift"}, {"id": "332603004", "nama": "Endang Lestari", "posisi": "Member Consultant", "outlet": "FTL - Teuku Umar", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Temuan audit: Terdapat perubahan nama leads bayar dari ‘TU - LB - 260323 - A.D’ menjadi ‘Couple Adi’"}, {"id": "33241212", "nama": "Erina Puspita Sari", "posisi": "Member Consultant", "outlet": "FTL - Alam Sutera", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 7 April 2026, MC Erina Telat 1 Jam 34 Menit.\nSchedule jam 06:00, MC Datang Jam 07:34."}, {"id": "332511069", "nama": "Fadhlani Khairunnisa Sholihah", "posisi": "Member Consultant", "outlet": "FTL - Merdeka", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tidak merespon leads dalam 1x24 jam sebanyak 5 temuan."}, {"id": "332512100", "nama": "Faisal Makmur", "posisi": "Member Consultant", "outlet": "FTL - Ciputat", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 7 April 2026, MC Faisal Telat 1 Jam 22 Menit.\nSchedule jam 10:00, MC Datang Jam 11:22."}, {"id": "33240223", "nama": "Faiz Gusnanda", "posisi": "Member Consultant", "outlet": "Stride - Gading Timur", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "SP 3 krn Pada tanggal 2 April staff telat, tiba di outlet jam 07:08 saat shift jam 6 (telat 1 jam 8 menit)"}, {"id": "332602044", "nama": "Fiscal Ramandha", "posisi": "Personal Trainer", "outlet": "FTL - Pasir Koja", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tanggal 13 April 2026 terlambat datang bekerja (2 jam 22 menit) saat schedule jam 10.00."}, {"id": "332508003", "nama": "Ginang Prasidina Lucitha Avieliaani", "posisi": "Personal Trainer", "outlet": "FTL - Pajajaran", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tidak langsung mengembalikan barang Lost and Found (cincin) ke Front Ofiice pada 16 April 2026"}, {"id": "33250493", "nama": "Hapis Maulana", "posisi": "Personal Trainer", "outlet": "FTL - Pamulang", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Staff melebihi batas waktu 1 Jam 43 Menit dalam Coaching."}, {"id": "33240814", "nama": "Haria Sukisna", "posisi": "Personal Trainer", "outlet": "FTL - Puri", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "SP 3 krn Pada tanggal 28 Maret 2026 Jadwal Shift PT Haria pukul 15.00 (absen 12.13) namun sudah pulang pada pukul 21.58"}, {"id": "33240132", "nama": "Luciano Rivanly Aditian", "posisi": "Member Consultant", "outlet": "FTL - Teuku Umar", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 21 April, MC Luciano Rivanly Aditian tercatat terlambat selama 1 jam 36 menit. Yang bersangkutan dijadwalkan masuk pukul 10.00, namun baru hadir pada pukul 11.36."}, {"id": "332602097", "nama": "M Genta Rantias", "posisi": "Member Consultant", "outlet": "FTL - Pondok Gede", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn 1 Temuan Audit bahwa staff terindikasi Move WA (MC menginformasikan nomor whatsapp pribadi)"}, {"id": "332602100", "nama": "Machmud Arkani", "posisi": "Member Consultant", "outlet": "FTL - Blok M", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Staff tidak merespon leads yang diberikan 1x24 jam"}, {"id": "33250104", "nama": "Made Agung Dwicahya Arsana Putra", "posisi": "Personal Trainer", "outlet": "FTL - Bendungan Hilir", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 17 April, PT melakukan check in member a.n FELIX REYNALDI SANTOSA (108118) menggunakan foto member."}, {"id": "332601115", "nama": "Martin Zacharias", "posisi": "Member Consultant", "outlet": "FTL - Satrio", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Telat pada tanggal 2 April 2026 dan 4 April 2026"}, {"id": "332601128", "nama": "Moch Ricko Andri Yanto", "posisi": "Member Consultant", "outlet": "FTL - Teuku Umar", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Pada tanggal 13 April 2026, MC Ricko tercatat beristirahat di area lounge selama 17 menit (14.15–14.32)."}, {"id": "33240525", "nama": "Mochamad Danitra Septiana", "posisi": "Member Consultant", "outlet": "FTL - Kerobokan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Berdasarkan temuan audit, MC tidak merespons leads yang diberikan dalam kurun waktu 1 x 24 jam."}, {"id": "332601039", "nama": "Muhammad Adryan Okuputra", "posisi": "Sales Manager", "outlet": "FTL - Mustika Jaya", "level": "Manager", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 200000, "alasan": "SP 1 krn Tidur di bean bag lounge dari jam 14:28- 15:03 (35 menit) pada tanggal 18 April 2026"}, {"id": "33250382", "nama": "Muhammad Ferdy Akbar", "posisi": "Personal Trainer", "outlet": "FTL - Pasir Koja", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tanggal 16 April 2026 jam 19.30 lalai dalam memeriksa gymmaster sebelum melatih sehingga melatih tanpa ada booking."}, {"id": "332508039", "nama": "Muhammad Reva", "posisi": "Personal Trainer", "outlet": "FTL - Puri Depok Mas", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Pada tanggal 19 April PT Reva telat, tiba di outlet jam 07:12 saat shift jam 6 (telat 1 jam 12 menit)"}, {"id": "332603091", "nama": "Muhammad Reza Nur Fadlilah", "posisi": "Call Center", "outlet": "FTL - Head Office", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Menjadikan Financial lost / Tidak merubah tahapan unsorted"}, {"id": "332512046", "nama": "Muhammad Ryaldi Irawan", "posisi": "Member Consultant", "outlet": "FTL - Bendungan Hilir", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Staff tidak merespon leads yang diberikan 1x24 jam"}, {"id": "332510086", "nama": "Nadia Nurmuchlifah", "posisi": "Member Consultant", "outlet": "FTL - Pondok Bambu", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Under Perform"}, {"id": "332604092", "nama": "Nafa Uzma", "posisi": "Member Consultant", "outlet": "FTL - Teuku Umar", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Berdasarkan Temuan Audit W4, MC tidak merespons leads yang diberikan dalam kurun waktu 1 x 24 jam."}, {"id": "33241038", "nama": "Natasya Leonita", "posisi": "Member Consultant", "outlet": "FTL - Gading Sunter", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tidak menjalankan tugas dari SM, AM dan BD yang telah diberikan berupa : \n1. Perbaikan cara chat bitrix\n2. Tidak Menjalankan service excelent dengan detail mengenai gali potensi member BR dan Corporate."}, {"id": "33250433", "nama": "Naufal Abdillah", "posisi": "Member Consultant", "outlet": "FTL - Gading Sunter", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 10 April 2026, MC Naufal masuk gate satu akses bersama dengan member JEDIDIAH ALPHA SUTANTO (1075593) pada jam 14:01."}, {"id": "33240341", "nama": "Okta Aria Saputra", "posisi": "Personal Trainer", "outlet": "FTL - Pondok Gede", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 10 April 2026, PT Okta tidur di bean bag lounge LT 2 dari jam 10:41-11:30 (shift jam 06:00)."}, {"id": "33241225", "nama": "Oni Roni", "posisi": "Personal Trainer", "outlet": "FTL - Pondok Indah", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tidak perfome selama 3 bulan, arahan dari pak willy jika bulan ini tidak perfome lagi makan akan ada tindakan pemutusan kerja/ cut off"}, {"id": "33250732", "nama": "Pascalis Satrio Utomo Dewa", "posisi": "Personal Trainer", "outlet": "FTL - Gading Sunter", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Datang terlambat tidak info"}, {"id": "332511016", "nama": "Rahmawati Dewi Sekar", "posisi": "Personal Trainer", "outlet": "FTL - Alam Sutera", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 7 April 2026, PT Rahma Telat 2 Jam 2 Menit.\nSchedule jam 10:00, PT Datang Jam 12:02."}, {"id": "332603079", "nama": "Raka Almasiha Rabbani", "posisi": "Member Consultant", "outlet": "FTL - Mampang", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn 1. Sering mengabaikan intruksi atasannya serta tugas flooring\n2. Tidak mendengarkan teguran verbal dan coaching yang diberikan mengenai keterlambatan masuk"}, {"id": "332603002", "nama": "Rama doni", "posisi": "Member Consultant", "outlet": "FTL - Kerobokan", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Berdasarkan temuan, pada tanggal 9 April 2026, MC Rama mengambil 2 (dua) leads pada sistem Bitrix tanpa melalui tim Call Center, yang mengakibatkan leads tersebut tidak dapat ditagihkan kepada MC. Leads dimaksud adalah ID 4285437 dan 4285431."}, {"id": "20092607", "nama": "Ramadhan Syafrizal", "posisi": "Outlet Manager", "outlet": "FTL - Blok M", "level": "Manager", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 200000, "alasan": "SP 1 krn Melakukan manual booking conduct PT untuk member atas nama SHOFI SRI HARDYATMI HASANAH (1054459) pada conduct tanggal 21 April 2026 tanpa memberitahukan ke audit"}, {"id": "33231030", "nama": "Rayhan Rasyid Zuhdy", "posisi": "Personal Trainer", "outlet": "FTL - Pondok Gede", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 10 April 2026, PT Rayhan tidur di musholla dari jam 11:06-13:02 (2 jam 4 menit) (Shift jam 12:00)."}, {"id": "332512043", "nama": "Rio Ikram Jamil", "posisi": "Member Consultant", "outlet": "FTL - Tomang", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn 4 Temuan audit bahwa staff tidak merespon leads yang diberikan 1x24 jam"}, {"id": "33240875", "nama": "Rizkia Agung  Dharmawan", "posisi": "Personal Trainer", "outlet": "FTL - Pasir Koja", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Melanggar instruksi direksi dengan mengambil libur di tanggal 25 Maret 2026"}, {"id": "332512050", "nama": "Siti Rahma Hanifah Royani D", "posisi": "Member Consultant", "outlet": "FTL - Mustika Jaya", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada Tanggal 17 April, MC Siti Rahma telat, tiba di oulet jam 07:41 saat shift jam 06:00 (telat 1 jam 41 menit)"}, {"id": "332510050", "nama": "Verra Andriyani", "posisi": "Member Consultant", "outlet": "FTL - Galaxy", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "SP 3 krn Staff jadwal shift pada jam 06:00, namun baru memasuki outlet jam 07:04 (telat 1 jam 4 menit)"}, {"id": "332508043", "nama": "Vino Purnomo", "posisi": "Personal Trainer", "outlet": "FTL - Puri Depok Mas", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 15 April PT Vino telat, tiba di outlet jam 09:02 saat shift jam 6 (telat 3 jam 2 menit)"}, {"id": "332604016", "nama": "Yoga Satria Pratama", "posisi": "Personal Trainer", "outlet": "FTL - Kemanggisan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Pada tanggal 16 April 2026, staff memindahkan mobil member tanpa izin."}, {"id": "33240435", "nama": "Yosia Dave Natanael", "posisi": "Member Consultant", "outlet": "Stride - Latumenten", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn 4 Temuan audit, staff tidak merespon leads yang diberikan 1x24 jam"}, {"id": "33240736", "nama": "Yudhi Kusumawardani", "posisi": "Personal Trainer", "outlet": "FTL - Gading Sunter", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Datang terlambat tidak info"}, {"id": "332508053", "nama": "Yuliany Sartika", "posisi": "Personal Trainer", "outlet": "FTL - Pondok Bambu", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "SP 3 krn PT underperfomance selama 2 bulan berturut sehingga tidak mencapai KPI."}, {"id": "332512078", "nama": "Ashley Kaitlyn", "posisi": "Member Consultant", "outlet": "FTL - Gubeng", "level": "Staff", "jmhSpRaw": "2 & 3 x 2", "spLevels": [2, 3], "totalSp": 800000, "alasan": "SP 2 krn pada tanggal 30 Maret 2026, MC pulang saat handle guest sehingga dilanjutkan oleh MC lain ; SP 3 Temuan audit W3, MC tidak merespon leads yang diberikan dalam 1x24 jam & MC Ashley Kaitlyn terlambat 47 menit, dischedule pukul 10:00 namun datang pukul 10:47 pada tanggal 18 April 2026"}, {"id": "332602017", "nama": "Maranata Lamria", "posisi": "Member Consultant", "outlet": "FTL - Depok Lama", "level": "Staff", "jmhSpRaw": "1,2 & 3 x 2", "spLevels": [1, 2, 3], "totalSp": 900000, "alasan": "SP 1 krn pemuan Audit W3, MC tidak merespon leads yang diberikan 1x24 jam ; SP 2 krn Tanggal 1 April MC Maranata (shift 09:00) terindikasi bermain judi online saat jam kerja di area outlet ; SP 3 krn Pada tanggal 1 April MC Maranata memutar cctv ke arah lain hingga cctv terlepas dari bracket & Pada tanggal 1 April MC Maranata (shift 09:00)  merokok di area gudang menggunakan seragam lalu memutar cctv ke arah dinding"}, {"id": "332512047", "nama": "Syifa Amalia Azzahra", "posisi": "Member Consultant", "outlet": "FTL - Alam Sutera", "level": "Staff", "jmhSpRaw": "2 & 3 x 2", "spLevels": [2, 3], "totalSp": 800000, "alasan": "SP 2  krn pada tanggal 7 April 2026, MC Syifa Telat 1 Jam 22 Menit ; SP 3 krn ada tanggal 8 April 2026, MC Syifa Telat 2 Jam 41 Menit & Temuan audit W2, MC tidak merespon leads yang diberikan 1x24 jam"}, {"id": "332512070", "nama": "Muhammad Nur Alimudin", "posisi": "Front Office", "outlet": "FTL - Cikarang", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Hilang tanpa kabar tidak bisa dihubungi"}, {"id": "332511041", "nama": "Andi Susanto", "posisi": "Front Office", "outlet": "FTL - Benhil", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Tidak melakukan SOP pemeriksaan member yang melewati gate alarm yang berbunyi"}, {"id": "33240927", "nama": "Anindhita Alfarah", "posisi": "Front Office", "outlet": "FTL - Bekasi Timur", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tidak mengorder Xpose sehingga chiller Xpose kosong"}, {"id": "332508054", "nama": "Annurul Jalil Lathif", "posisi": "Front Office", "outlet": "FTL - Bekasi Timur", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tidak mengorder Xpose sehingga chiller Xpose kosong"}, {"id": "33250729", "nama": "Chantiqa Aulia Putri", "posisi": "Front Office", "outlet": "FTL - Tebet", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Tidak aware terhadap aktivasi Sauna di loker female, sehingga menimbulkan komplain terhadap fasilitas."}, {"id": "33250663", "nama": "Dina Monica  Putri", "posisi": "Front Office", "outlet": "Stride - Banceuy", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn Tanggal 13 Mei 2026 overbreak saat shift closing dengan lama waktu 2 jam 13 menit."}, {"id": "33250352", "nama": "Moh Bismar Bulgia Umadji", "posisi": "Front Office", "outlet": "FTL - Pondok Bambu", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "SP 3 krn Telat masuk bekerja selama 22 Menit pada tanggal 10 Mei 2026."}, {"id": "33240724", "nama": "Ema Indah Maria Samosir", "posisi": "Front Office", "outlet": "FTL - Cikarang", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn Lupa flooring checklist kebersihan dan memanipulasi timestamp"}, {"id": "33240762", "nama": "Muhamad Adam Rizki Mahdi", "posisi": "Teknisi Alat FTLHO", "outlet": "FTL HO", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn ditemukan kelalaian dalam menjalankan target pekerjaan serta meninggalkan outlet tanpa memberikan informasi atau kabar"}, {"id": "332508113", "nama": "Naufal Affan", "posisi": "Customer Service_FTL.Tambun", "outlet": "FTL Tambun", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "SP 1 krn sikap FO dinilai tdk profesional saat menangani keluhan member terkait suhu jacuzzi yg dingin. Member merasa kurang nyaman dengan respons staff, sehingga member melakukan escalation terkait pelayanan tsb."}, {"id": "332512072", "nama": "Mauzha Chesa Putra Amsar", "posisi": "CustomerService_FTLTomang", "outlet": "FTL Tomang", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "SP 2 krn tdk konfirmasi kedatangan shift midnight pd tgl 23 mei 2026"}, {"id": "33240435", "nama": "Yosia Dave Natanael", "posisi": "Member Consultant", "outlet": "Stride - Latumenten", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "1. MC tidak ada penjualan bundling sama sekali dibulan april\n2. MC tidak memenuhi target renewal dan pembelian NJM to PT selama 3 bulan kebelakang \n3. Tidak serius dalam follow up leads bitrix\n4. performance penjualan menurun"}, {"id": "332508110", "nama": "Aulia Deshiastuti", "posisi": "Member Consultant", "outlet": "FTL - Pajajaran", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Staff tidak mencapai SOB yang sudah di sepakati untuk periode bulan Maret dan April"}, {"id": "33250617", "nama": "Ninit Widianti", "posisi": "Personal Trainer", "outlet": "FTL - Pasir Koja", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "Melanggar tata tertib dengan melakukan intimidasi pada rekan kerja sehingga membuat lingkungan tidak kondusif."}, {"id": "33250221", "nama": "Benjamin Amir", "posisi": "Personal Trainer", "outlet": "FTL - Dago", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tidak mencapai target selama 3 bulan berturut-turut (Februari, Maret, April)."}, {"id": "332601026", "nama": "Anggi Mukti Fadilah", "posisi": "Personal Trainer", "outlet": "FTL - Dago", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tidak mencapai target selama 3 bulan berturut-turut (Februari, Maret, April)."}, {"id": "33241279", "nama": "Annisa Rhamatia Desira", "posisi": "Member Consultant", "outlet": "Stride - Pecenongan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Telat lebih dari 2 jam tanpa info dan belum mencapai target yang sudah disepakati di akhir bulan"}, {"id": "33241005", "nama": "Wahyuni Febrianti", "posisi": "Member Consultant", "outlet": "FTL - Pasir Koja", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Melanggar tata tertib dengan kesalahpahaman antara rekan kerja sehingga mengakibatkan review tidak baik pada Google Review."}, {"id": "332512039", "nama": "Nira Santiawan", "posisi": "Member Consultant", "outlet": "FTL - Gunung Sahari", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Under performance dibulan april"}, {"id": "332512040", "nama": "Firdausiah Ramadhani", "posisi": "Member Consultant", "outlet": "FTL - Gunung Sahari", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Under performance dibulan april"}, {"id": "332508030", "nama": "Dhelvi Contessa Manalu", "posisi": "Member Consultant", "outlet": "FTL - Rawamangun", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "MC dalam 3 bulan pencapaian tidak mencapai MPC ( 7500 Poin )"}, {"id": "33240614", "nama": "Hendry Triandana", "posisi": "Member Consultant", "outlet": "FTL - Rawamangun", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Staff dalam 3 bulan pencapaian tidak mencapai MPC ( 7500 Poin )"}, {"id": "332508033", "nama": "Hotmasari Nainggolan", "posisi": "Member Consultant", "outlet": "Stride - Latumenten", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "MC tidak melakukan daily flow dengan baik, SE tidak dikerjakan dari bulan april pertengahan, pengisian commit, missed commit, BR, report tidak sesuai waktu ketentuan"}, {"id": "332602102", "nama": "Mirayana Safitri", "posisi": "Member Consultant", "outlet": "Stride - Latumenten", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "MC tidak melakukan daily flow dengan baik, SE tidak dikerjakan dari bulan april pertengahan, pengisian commit, missed commit, BR, report tidak sesuai waktu ketentuan"}, {"id": "332511077", "nama": "Satrya Bima Pramudatama", "posisi": "Member Consultant", "outlet": "Stride - Latumenten", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "MC tidak melakukan daily flow dengan baik, SE tidak dikerjakan dari bulan april pertengahan, pengisian commit, missed commit, BR, report tidak sesuai waktu ketentuan"}, {"id": "332508103", "nama": "Muhammad Ilham Maldini", "posisi": "Member Consultant", "outlet": "FTL - Pondok Bambu", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Under performance"}, {"id": "332603001", "nama": "Andre Nazarrudin", "posisi": "Member Consultant", "outlet": "FTL - Kerobokan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tidak melakukan follow up Bitrix sesuai dengan ketentuan yang berlaku, dengan total 3 temuan pada periode 1–9 Mei 2026. Sebelumnya, pada bulan April 2026 juga telah terdapat 3 temuan audit terkait hal serupa"}, {"id": "332603016", "nama": "Intan Listiawati", "posisi": "Personal Trainer", "outlet": "FTL - Dago", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tanggal 7 Mei 2026 melakukan Check In manual sesi conduct member atas nama Gusti Anita"}, {"id": "33240644", "nama": "Arsyadh Wicaksana Sufajar", "posisi": "Member Consultant", "outlet": "FTL - Gading Sunter", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada Tanggal 28 April 2026, MC Arsyadh Tidur di Mushola.\nMC Tidur selama 42 Menit, Dari Jam 15:09 - 15:51."}, {"id": "332511016", "nama": "Rahmawati Dewi Sekar", "posisi": "Personal Trainer", "outlet": "FTL - Alam Sutera", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "Pada 1 Mei 2026, PT Rahmawati Telat 2 Jam 6 Menit.\nSchedule jam 10:00, PT Datang Jam 12:06."}, {"id": "332603039", "nama": "Marsius Supriandi Damanik", "posisi": "Personal Trainer", "outlet": "FTL - Gunung Sahari", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 1 Mei 2026, PT Marsius memasuki Gate melewati Kolong Gate."}, {"id": "332512079", "nama": "Aditya Artha Lokaseputra", "posisi": "Member Consultant", "outlet": "FTL - Gubeng", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "Pada 6 Mei 2026, MC Aditya memasuki Gate menggunakan tombol Gate Out."}, {"id": "33250753", "nama": "Sutan Mohammed Miles", "posisi": "Personal Trainer", "outlet": "FTL - Tanjung Duren", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 3 Mei 2026, PT Sultan Telat 1 Jam 4 Menit.\nSchedule jam 06:00, PT Datang Jam 07:04."}, {"id": "332511026", "nama": "Gede Bagus Ismayana", "posisi": "Personal Trainer", "outlet": "FTL - Gubeng", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada 6 Mei 2026, PT Gede memasuki Gate menggunakan tombol Gate Out"}, {"id": "332512038", "nama": "Aditya Luthfi Pratama", "posisi": "Personal Trainer", "outlet": "FTL - Soekarno Hatta", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tanggal 6 Mei 2026 menyimpan tas selama schedule di dalam locker member."}, {"id": "332509114", "nama": "Jundana Dzikru Tanzil", "posisi": "Personal Trainer", "outlet": "FTL - Soekarno Hatta", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tanggal 2 Mei 2026 memasuki Outlet tanpa melewati gate (melalui sela-sela samping gate padel)."}, {"id": "332511004", "nama": "Saad Yazid Attamimi", "posisi": "Personal Trainer", "outlet": "FTL - Soekarno Hatta", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tanggal 6 Mei 2026 menyimpan tas selama incharge di locker member."}, {"id": "332510079", "nama": "Abyan Muhammed Widyantara", "posisi": "Member Consultant", "outlet": "FTL - Tebet", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Average low selama 3 bulan"}, {"id": "332508045", "nama": "Reza Oktavian", "posisi": "Personal Trainer", "outlet": "FTL - Alam Sutera", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Staff melakukan tindakan yang melanggar peraturan serta kode etik perusahaan dengan \"mengusir\" dan berbicara kasar kepada salah satu member yang mana adalah mantan pacarnya sendiri."}, {"id": "33250420", "nama": "Mohammad Fikra Arysanrio", "posisi": "Member Consultant", "outlet": "Stride - Cibinong", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "- Menggunakan Tab untuk  main game\n- Memasang commit palsu"}, {"id": "33250201", "nama": "Asri Mulyani", "posisi": "Sales Manager", "outlet": "FTL - Pasir Koja", "level": "Manager", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 200000, "alasan": "Pencapaian target di bulan April 2026 hanya 69,75%."}, {"id": "332508109", "nama": "Jamal Iskandar", "posisi": "Member Consultant", "outlet": "FTL - Agora", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tidak mengikuti flow dari perusahaan yang sudah diingatkan berulang kali"}, {"id": "332512052", "nama": "Dessy Maria Qimty", "posisi": "Member Consultant", "outlet": "FTL - Agora", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tidak mengikuti flow dari perusahaan yang sudah diingatkan berulang kali"}, {"id": "332601055", "nama": "Fitria Alpitrah", "posisi": "Member Consultant", "outlet": "FTL - Agora", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "Tidak  mengikuti flow dari perusahaan yang sudah diingatkan berulang kali"}, {"id": "332604055", "nama": "Muhammad Filza Rakasiwi", "posisi": "Member Consultant", "outlet": "FTL - Agora", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Staff tidak mengikuti flow dari perusahaan yang sudah diingatkan berulang kali"}, {"id": "33250501", "nama": "Galih Raka Siwi", "posisi": "Telesales", "outlet": "FTL - Center", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tidak disiplin terhadap jam kerja dan lalai menjalankan fungsi divisi"}, {"id": "33241022", "nama": "Deta Dio", "posisi": "Personal Trainer", "outlet": "FTL - Soekarno Hatta", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tanggal 9 Mei menyimpan tas dalam loker member selama in charge."}, {"id": "332604058", "nama": "Nabila Fasya Ramadhani", "posisi": "Member Consultant", "outlet": "FTL - Bekasi Timur", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Staff telat dan menyepelekan waktu"}, {"id": "33240948", "nama": "Dicka Ihsan Prasetya", "posisi": "Fitness Manager", "outlet": "FTL - Ahmad Yani", "level": "Manager", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 600000, "alasan": "Tanggal 25 April tertidur di bean bag Lounge selama 30 menit, temuan ke-2 tertidur di tempat yang sama."}, {"id": "332601126", "nama": "Jumadi awal", "posisi": "Member Consultant", "outlet": "FTL - Teuku Umar", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada Tanggal 12 Mei 2026, Staf MC a.n Jumadi Awal Telat 1 Jam 5 Menit.\nSchedule Jam 10:00, MC Memasuki Outlet jam 11:05."}, {"id": "332509094", "nama": "Muhammad Iqbal Zamharira", "posisi": "Personal Trainer", "outlet": "FTL - Soekarno Hatta", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tanggal 9 Mei 2026 meminjam loker member selama in charge."}, {"id": "332509058", "nama": "Arif Sugiarto", "posisi": "Personal Trainer", "outlet": "FTL - Bendungan Hilir", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "Temuan Audit, 14 May, PT Arif Sugiarto melakukan checkin manual sesi conduct member RISKA IKA HIDAYAT (1051396) untuk sesi 14 May 2026 20:00 - 21:00"}, {"id": "33240902", "nama": "Irsyad Muzhaffar Ariyontama", "posisi": "Personal Trainer", "outlet": "FTL - Satrio", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit, 13 May, PT Irsyad Muzhaffar Ariyontama melakukan checkin manual sesi conduct member TARMIZI HARYONO (123914) untuk sesi 11 May 2026 08:00 - 09:00"}, {"id": "33250371", "nama": "Rizki Pranata", "posisi": "Personal Trainer", "outlet": "FTL - Satrio", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit, 7 May, PT Rizki Pranata melakukan checkin manual sesi conduct member RAISSA KHUMAIRA (109852) untuk sesi 30 Apr 2026 21:00 - 22:00"}, {"id": "33231102", "nama": "Yomi David Armada Siahaan", "posisi": "Personal Trainer", "outlet": "FTL - Depok Lama", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit, 10 May, PT Yomi David A.S. melakukan checkin manual sesi conduct member RINI DWI ARTINI (91654) untuk sesi 10 May 2026"}, {"id": "332512002", "nama": "Ahmad Depitra", "posisi": "Personal Trainer", "outlet": "FTL - Pajajaran", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit, 7 May, PT Ahmad Depitra melakukan checkin manual sesi conduct member AZVALLIA QISHA PRADINIA (1054602) untuk sesi 10 May 2026 17:00 - 18:00"}, {"id": "332604023", "nama": "Fauzil Latief", "posisi": "Personal Trainer", "outlet": "Stride - Pecenongan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit, 10 May, PT Fauzil Latief melakukan checkin manual sesi conduct member SRI WAHYUNI (946735) untuk sesi 10 May 2026 13:00 - 14:00"}, {"id": "33250251", "nama": "Rafi Irawan", "posisi": "Personal Trainer", "outlet": "FTL - Ahmad Yani", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tanggal 11 Mei 2026 melakukan check in manual sesi conduct member atas nama Indriani Indriani (1029958)."}, {"id": "332509109", "nama": "Mohammad Praja Winata", "posisi": "Personal Trainer", "outlet": "FTL - Blok M", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit, 11 May PT Mohammad Praja Winata melakukan checkin manual sesi conduct member LARAS ATIKASARI (1032217) untuk sesi 11 May 2026 18:00 - 19:00"}, {"id": "33250612", "nama": "Rafli Akbar", "posisi": "Personal Trainer", "outlet": "FTL - Citra Garden", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit, 14 May, PT Rafli Akbar melakukan checkin manual sesi conduct member FEKIH MAULANA MAHRUBI (1063641) untuk sesi 14 May 2026 21:00 - 22:00"}, {"id": "33250735", "nama": "Tiva Yuspita Supriyadi", "posisi": "Personal Trainer", "outlet": "FTL - Cibubur", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit, 12 May, PT Tiva Yuspita Supriyadi melakukan checkin manual sesi conduct member MELASARI MELASARI (1080426) untuk sesi 12 May 2026 15:00 - 16:00"}, {"id": "33250610", "nama": "Putri Andriani", "posisi": "Personal Trainer", "outlet": "FTL - Pamulang", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit, 7 May, PT Putri Andriani melakukan checkin manual sesi conduct member ZANITA CHAIRUNNISA (1027351) untuk sesi  8 May 2026 07:00 - 08:0"}, {"id": "332509037", "nama": "Nur Annisa", "posisi": "Member Consultant", "outlet": "FTL - Pondok Gede", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit, MC tidak merespon 10 leads yang diberikan 1x24 jam"}, {"id": "33240217", "nama": "Sania Fitri", "posisi": "Member Consultant", "outlet": "FTL - Citra Garden", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Temuan Audit, MC tidak merespon 4 leads yang diberikan 1x24 jam"}, {"id": "33230903", "nama": "Fedy Baskara", "posisi": "Outlet Manager", "outlet": "FTL - Galaxy", "level": "Manager", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 200000, "alasan": "Tidak mentransfer leads MC yang di terminated ke MC lain"}, {"id": "33231131", "nama": "Gilang Perdana", "posisi": "Personal Trainer", "outlet": "FTL - Bendungan Hilir", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "Pada tanggal 7 Mei 2026, PT Gilang Telat 1 Jam 1 Menit.\nSchedule Jam 06:00, PT Memasuki Outlet jam 07:01 dan PT tsb memiliki conduct dengan member RICO ALFEUS TUERAH pada jam 06:00 - 07:00 tapi member latihan sendiri"}, {"id": "33250611", "nama": "Putri Irnawati", "posisi": "Personal Trainer", "outlet": "FTL - Galaxy", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "Pada tanggal 15 Mei, PT Putri Irnawati melakukan checkin manual sesi conduct member atas nama DIAN HAERANI (1048729) pada sesi tanggal 15 Mei 11:00-12:00"}, {"id": "332511044", "nama": "Aan Hidayat", "posisi": "Personal Trainer", "outlet": "FTL - Pamulang", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "PT tidak menjalankan penugasan GO/RA 20 dengan tuntas. Hanya selesai di 10 GO/RA"}, {"id": "33250372", "nama": "Muhammad Farhan Hidayat", "posisi": "Personal Trainer", "outlet": "FTL - Sawangan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 19 May 2026, PT Muhammad Farhan Hidayat melakukan checkin manual sesi conduct member ILHAM JULIAWAN MANGIDI (1075020) untuk sesi 18 May 2026 07:00 - 08:00"}, {"id": "332604007", "nama": "Kokon Jamaludin", "posisi": "Personal Trainer", "outlet": "FTL - Sukajadi", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tanggal 16 Mei 2026 melakukan checkin manual sesi conduct member atas nama Jessica Arsagi Tampubolon untuk sesi tanggal 15 Mei 2026"}, {"id": "332511028", "nama": "Muhammad Jauzaak Khaidar", "posisi": "Personal Trainer", "outlet": "FTL - Gubeng", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 19 Mei 2026, PT Muhammad Jauzaak Khaidar melakukan checkin manual sesi conduct member GUNAWAN GUNAWAN (1051561) pada jam 18:00 - 19:00"}, {"id": "332605040", "nama": "Muhammad Zidane Noor", "posisi": "Personal Trainer", "outlet": "FTL - Menteng", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 19 May, PT Muhammad Zidane Noor melakukan checkin manual sesi conduct member AUBREY FIORENTIA HOKGIONO (1083190) untuk sesi 19 May 2026 18:00 - 19:00"}, {"id": "332509056", "nama": "M Topan Ferdinan", "posisi": "Personal Trainer", "outlet": "FTL - Bendungan Hilir", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "18 May, PT M Topan Ferdinan melakukan checkin manual sesi conduct member DIKO ANUGRAH RAMADHAN (1071735) untuk sesi 21 May 2026 06:00 - 07:00"}, {"id": "33231030", "nama": "Rayhan Rasyid Zuhdy", "posisi": "Personal Trainer", "outlet": "FTL - Pondok Gede", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "Pada tanggal 14 Mei 2026, PT Rayhan Rasyid Telat 1 Jam 25 Menit.\nSchedule Jam 06:00, PT Datang Jam 07:25, PT Absen Great Day jam 07:26."}, {"id": "33250760", "nama": "Muhammad Haniif Nuraliim", "posisi": "Personal Trainer", "outlet": "FTL - Blok M", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 14 Mei, PT melakukan absensi greatday PT Mario Arya menggunakan foto (bukan aktual selfie) PT Mario absen out greatday jam 22:48, aktual keluar outlet 22:08"}, {"id": "332604020", "nama": "Mario Arya Difa", "posisi": "Personal Trainer", "outlet": "FTL - Blok M", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 14 Mei, PT melakukan absen out pada greatday menggunakan foto (bukan aktual selfie) dan yang melakukan absensi PT Muhammad Haniif Nuraliim. PT absen out greatday jam 22:48, aktual keluar outlet 22:08"}, {"id": "332601018", "nama": "Sufendi Setiawan", "posisi": "Personal Trainer", "outlet": "Stride - Pecenongan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 15 Mei, PT Sufendi melakukan check in member a.n GIOKY INDRIARNI SUTIONO (1075372) menggunakan foto member"}, {"id": "332511037", "nama": "Moh. Rizal Charbi", "posisi": "Personal Trainer", "outlet": "FTL - A.R. Hakim", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 18 Mei 2026 PT Charbi memasuki outlet tidak melewati gate IN tetapi melewati samping gate"}, {"id": "332601016", "nama": "Efraim Melkianus Manuputty", "posisi": "Personal Trainer", "outlet": "Stride - Pecenongan", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "Temuan Audit tanggal 18 Mei, PT Efraim melakukan manual check in member MARIA LINGGAWATI SETIAWAN (1047020)"}, {"id": "33240866", "nama": "Haris Nugraha Tanjung", "posisi": "Personal Trainer", "outlet": "FTL - Pasir Koja", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada week 3 bulan Mei 2026 tidak melaksanakan instruksi Fitness Manager dan Area Manager perihal punishment PT."}, {"id": "332602095", "nama": "Muhammad Dzaki", "posisi": "Member Consultant", "outlet": "FTL - Citra Garden", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tidak complete 3 guest book berturut-turut"}, {"id": "332604015", "nama": "Widia Safitri", "posisi": "Personal Trainer", "outlet": "FTL - Blok M", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Melakukan check-in secara manual (sebelumnya sudah di edukasi)"}, {"id": "33240240", "nama": "Sri Ainun Gunawanti", "posisi": "Member Consultant", "outlet": "FTL - Citra Garden", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tidak complete guest book 2x berturut-turut dan tidak mengirim commit"}, {"id": "332512005", "nama": "Ibnu Rasyid", "posisi": "Personal Trainer", "outlet": "FTL - Pamulang", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "Tidak menjalankan RA seminimalnya 25 RA di bulan MEI dengan deadline tanggal 25 Mei 2026"}, {"id": "332508070", "nama": "Agung Putra Pamungkas", "posisi": "Personal Trainer", "outlet": "FTL - Citra Garden", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "Telah terjadi penganiayaan yang dilakukan oleh PT Agung terhadap MC Alket dikarenakan kesalahpahaman saat jam shift kerja"}, {"id": "33250606", "nama": "Fadel Ilyas Paturusi", "posisi": "Personal Trainer", "outlet": "Stride - Gading Timur", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Ketidaksesuaian prosedur yang ada FTL  berupa cek in manual pada saat gate error dan member hadir untuk latihan. sudah diketahui dan diminta release SP 1 oleh Area Manager."}, {"id": "332603082", "nama": "Risma Noviane", "posisi": "Member Consultant", "outlet": "FTL - Sawangan", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "16 Temuan MC tidak merespon leads yang diberikan 1x24 jam"}, {"id": "33241236", "nama": "Alket Aprizal", "posisi": "Member Consultant", "outlet": "FTL - Citra Garden", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "18 Temuan MC tidak merespon leads yang diberikan 1x24 jam"}, {"id": "20092660", "nama": "Aloysius Avian Darmanto", "posisi": "Member Consultant", "outlet": "FTL - Green Lake City", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "10 Temuan MC tidak merespon leads yang diberikan 1x24 jam"}, {"id": "332601056", "nama": "Ditania Putri Handayani", "posisi": "Member Consultant", "outlet": "FTL Pilates - Gading Serpong", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "1. Telat secara berulang\n2. Tidak split payment sesuai prosedur finance secara berulang\n3. Tidak teliti dalam proses administrasi secara berulang sehingga harus pengajuan BA berulang terlebih dahulu"}, {"id": "332605008", "nama": "Firas Jaudah", "posisi": "Personal Trainer", "outlet": "FTL - Cibubur", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 10  Mei, PT Firas Jaudah melakukan checkin manual sesi conduct member atas nama AGUS SANTOSO (1059713) pada sesi tanggal 10 Mei 16:00-17:00 dengan PT Irfan Syahril"}, {"id": "332603099", "nama": "Julian Dwi Prasetyo", "posisi": "Personal Trainer", "outlet": "FTL - Sukajadi", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tanggal 17 Mei 2026 melakukan check in manual sesi conduct member atas nama Natanael Charis (1023988) untuk sesi tanggal 17 May 2026 14:00 - 15:00"}, {"id": "33250792", "nama": "Zahratus Syifa", "posisi": "Personal Trainer", "outlet": "FTL - Puri", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 26 Mei, PT Zahratus Syifa melakukan checkin manual sesi conduct member FENIKA FENIKA (79551) untuk sesi 26 Mei 2026 18:00 - 19:00"}, {"id": "332511104", "nama": "Abdul Rochman", "posisi": "Personal Trainer", "outlet": "FTL - Rawamangun", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 21 Mei, PT Abdul Rochman melakukan checkin manual sesi conduct member YASMINE AUDREY (1085027) untuk sesi 22 Mei 2026 14:00 - 15:00"}, {"id": "33250732", "nama": "Pascalis Satrio Utomo Dewa", "posisi": "Personal Trainer", "outlet": "FTL - Gading Sunter", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "Pada Tanggal 23 Mei, PT Pascalis Satrio Utomo Dewa melakukan checkin manual sesi conduct member EKA IRFANINGSIH, SH (1079541) untuk sesi 21 Mei 2026 20:00 - 21:00"}, {"id": "332604018", "nama": "Claudio Alexandro Kermite", "posisi": "Personal Trainer", "outlet": "FTL - SCBD", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 22 Mei, PT Claudio Alexandro Kermite melakukan checkin manual sesi conduct member ANDI AZISMI (1078713) untuk sesi 23 Mei 2026 19:00 - 20:00"}, {"id": "33241233", "nama": "Zulfadli Ginting", "posisi": "Personal Trainer", "outlet": "FTL - Gandaria", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "PT Zulfadli Ginting melakukan check in manual sesi conduct member RIZQ IRFAANSYAH BURHAN #101978 untuk sesi 17 May 2026 jam 07:00 - 08:00"}, {"id": "332511036", "nama": "Munika Risna Wati", "posisi": "Personal Trainer", "outlet": "FTL - A.R. Hakim", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 23 Mei 2026, PT Munika Risna Wati melakukan checkin manual sesi conduct member MELISA MELISA (1073445) untuk sesi 23 Mei 2026 10:00-11:00"}, {"id": "332508077", "nama": "Anggun Angreani Tamba", "posisi": "Personal Trainer", "outlet": "FTL - SCBD", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 23 Mei 2026 PT Anggun Anggreani Tamba melakukan check in manual sesi conduct dengan member 96320 MAULINA ANGGRAINI FITRI untuk sesi pada pukul 11:00 - 12:00"}, {"id": "332509097", "nama": "Tri Haryanto", "posisi": "Personal Trainer", "outlet": "FTL - Mampang", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 20 Mei, PT Tri melakukan manual checkin sesi conduct member H. ABDUL MANNAN (124578) untuk sesi 20 Mei"}, {"id": "332605053", "nama": "Marselanus Krisharwanto", "posisi": "Personal Trainer", "outlet": "FTL - Mustika Jaya", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "19 Mei, PT Marselanus Krisharwanto melakukan check in manual sesi conduct dengan member ETI SEPTIANA (55179) untuk sesi 19 Mei 2026 09:00 - 10:00"}, {"id": "332603028", "nama": "Hanny Puspa", "posisi": "Personal Trainer", "outlet": "FTL - Puri", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 24 Mei, PT Hanny Puspa melakukan check in manual sesi conduct dengan member THERESIA FRANSMANTO (1009195) untuk sesi 24 Mei 2026 14:00 - 15:00"}, {"id": "332508037", "nama": "Ibnu Maulana", "posisi": "Personal Trainer", "outlet": "FTL - Satrio", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 24 Mei, PT Ibnu Maulana melakukan check in manual sesi conduct dengan member ANDI HAFIIDH (1025443) untuk sesi 24 Mei 2026 09:00 - 10:00"}, {"id": "332605063", "nama": "Dwi Opraliansyah", "posisi": "Personal Trainer", "outlet": "FTL - Gandaria", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 26 Mei, PT Dwi Opraliansyah melakukan check in manual sesi conduct dengan member HOWARD TIKA (1087902) untuk sesi 26 Mei 2026 17:00 - 18:00"}, {"id": "33240782", "nama": "Jannatun Naimah", "posisi": "Personal Trainer", "outlet": "FTL - Green Garden", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 27 Mei, PT Jannatun Naimah melakukan check in manual sesi conduct dengan member ALIFAH DZATIL IZZAH (1086191) untuk sesi 7 Mei 2026 06:00 - 07:00"}, {"id": "332511034", "nama": "Elga Danila", "posisi": "Personal Trainer", "outlet": "FTL - Gubeng", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 21 Mei 2026, PT Elga terlambat 1 jam 58 menit, schedule pukul 06:00 tetapi datang pukul 07:58"}, {"id": "33241131", "nama": "Ratna Juwita", "posisi": "Member Consultant", "outlet": "FTL - A.R. Hakim", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada tanggal 27 Mei 2026, MC Ratna terlambat 1 jam 3 menit, di schedule pukul 06:00 namun datang pukul 07:03"}, {"id": "332601098", "nama": "L. Cahyana Ahmad Jayadi", "posisi": "Personal Trainer", "outlet": "FTL - Teuku Umar", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pada 25 Mei 2026, PT L. Cahyana Ahmad Jayadi melakukan check-in manual sesi conduct dengan member atas nama AMELINDA NOVYARA (1066274) untuk sesi tanggal 25 Mei 2026 pukul 12.00 – 13.00."}, {"id": "33250488", "nama": "Arief Gusna Harisyandya Yudha", "posisi": "Personal Trainer", "outlet": "FTL - Pasir Koja", "level": "Staff", "jmhSpRaw": "2", "spLevels": [2], "totalSp": 200000, "alasan": "Low performance pada bulan Mei 2026 dan tidak memberikan informasi pada manager jika izin bekerja tanggal 30 Mei 2026 sehingga tidak block schedule yang menyebabkan member cancel latihan."}, {"id": "332604012", "nama": "Adil", "posisi": "Personal Trainer", "outlet": "FTL - Bendungan Hilir", "level": "Staff", "jmhSpRaw": "1 x 2 , 2, 3", "spLevels": [1, 2, 3], "totalSp": 700000, "alasan": "Temuan Audit, 11 May, PT Adil melakukan checkin manual sesi conduct member RISKA IKA HIDAYAT (1051396) untuk sesi 11 May 2026 13:00 - 14:00 ; Temuan Audit, 12 May, PT Adil melakukan checkin manual sesi conduct member RISKA IKA HIDAYAT (1051396) untuk sesi 12 May 2026 15:00 - 16:00 ; Pada tanggal 8 Mei, PT Adil melakukan checkin manual sesi conduct member NAUFAL AMMAR FADLUROHMAN (1036182) untuk sesi 8 Mei 2026 19:00 - 20:00 ;"}, {"id": "33240777", "nama": "Angky Pramono Putra", "posisi": "Telesales", "outlet": "FTL - Center", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "Tidak disiplin terhadap jam kerja dan lalai menjalankan fungsi divisi ; Lalai dalam menjalankan Disiplin jam Kerja. Tidak bertanggung jawab terhadap Job desc yang diberikan"}, {"id": "332512034", "nama": "Hanzel Anthony", "posisi": "Personal Trainer", "outlet": "FTL - Alam Sutera", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "Pada tanggal 20 Mei, PT Hanzel melakukan manual checkin sesi conduct member HAQIEZA KHALDA. N. R (1039939) untuk sesi 20 Mei 2026 21:00-22:00 ; Pada tanggal 23 Mei, PT Hanzel Anthony melakukan check in manual sesi conduct dengan member KARTONO KARTONO (1018328) untuk sesi 23 Mei 2026 10:00 - 11:00"}, {"id": "33250481", "nama": "Khoerul Bahtiar", "posisi": "Telesales", "outlet": "FTL - Center", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "Tidak disiplin terhadap jam kerja dan lalai menjalankan fungsi divisi ; Lalai dalam menjalankan Disiplin jam Kerja. Tidak bertanggung jawab terhadap Job desc yang diberikan"}, {"id": "332508046", "nama": "Meysi Andini", "posisi": "Personal Trainer", "outlet": "FTL - Mampang", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "Temuan Audit, 12 May, PT Meysi Andini melakukan checkin manual sesi conduct member YUNITA RAHMASARI (66343) untuk sesi 12 May 2026 18:00 - 19:00 ; Pada tanggal 6 Mei, PT Meysi Andini melakukan checkin manual sesi conduct member TANNIA MEISA JUWANA (1021213) untuk sesi 5 Mei 2026 18:00 - 19:00"}, {"id": "33250119", "nama": "Muhammad Phirous Rauzan", "posisi": "Personal Trainer", "outlet": "FTL - Ahmad Yani", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Tanggal 6 Mei 2026 melakukan check in manual sesi conduct member atas nama Fitri Nofianti Vetra (1070663)."}, {"id": "33240855", "nama": "Nirza Septiyan", "posisi": "Personal Trainer", "outlet": "FTL - Ahmad Yani", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "Pada tanggal 18 Mei MC Nirza shift jam 10:00, baru memasuki outlet jam 11:55 (telat 1 jam 55 menit) ; MC Nirza  lalai dalam melakukan penginputan data membership yg mengakibatkan kesalahan data member yang di input kedalam system"}, {"id": "20092215", "nama": "Oka Panji Herlambang", "posisi": "Fitness Manager", "outlet": "FTL - Pondok Bambu", "level": "Manager", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 600000, "alasan": "1. Tidak fokus dalam menjalankan tugas bulanan dari Area Manager, termasuk penyelesaian MBP, serta kurang melakukan pengawasan terhadap tim.\n2. Kurang memperhatikan kebersihan alat di gym floor dan tidak melakukan koordinasi yang optimal dengan tim kebersihan.\n3. Terlambat menyelesaikan laporan PT yang seharusnya telah selesai per 9 Mei 2026.\n4. Kurang teliti terhadap kebutuhan operasional, termasuk tidak tersedianya QR Scan Fitscan di WR. ; Tidak dapat mengendalikan emosi, menimbulkan kegaduhan di area staf lantai 2, mengajak PT berkelahi, serta merusak pintu ruang staf hingga berlubang."}, {"id": "33230715", "nama": "Violica  Deyanti", "posisi": "(Tidak diketahui)", "outlet": "(Tidak diketahui)", "level": "Staff", "jmhSpRaw": "1 & 2", "spLevels": [1, 2], "totalSp": 300000, "alasan": "Tidak disiplin terhadap jam kerja dan lalai menjalankan fungsi divisi ; Lalai dalam menjalankan Disiplin jam Kerja. Tidak bertanggung jawab terhadap Job desc yang diberikan"}, {"id": "332510040", "nama": "Alexander Brivio Tan", "posisi": "Member Consultant", "outlet": "FTL - Galaxy", "level": "Staff", "jmhSpRaw": "1", "spLevels": [1], "totalSp": 100000, "alasan": "Pemalsuan surat sakit"}, {"id": "332604044", "nama": "Dela Amelia", "posisi": "Front Office", "outlet": "FTL - KBP", "level": "Staff", "jmhSpRaw": "3", "spLevels": [3], "totalSp": 300000, "alasan": "Pemalsuan SKD"}];
+
+async function importHistoris(){
+  const btn = $("#btnImport");
+  btn.disabled = true;
+  btn.textContent = "Mengimpor…";
+  try{
+    const chunkSize = 400;
+    for(let i=0; i<HISTORIS_DATA.length; i+=chunkSize){
+      const batch = writeBatch(db);
+      const chunk = HISTORIS_DATA.slice(i, i+chunkSize);
+      chunk.forEach(item => {
+        const ref = doc(collection(db, "temuan"));
+        batch.set(ref, {
+          staffId: item.id,
+          nama: item.nama,
+          posisi: item.posisi,
+          outlet: item.outlet,
+          level: item.level,
+          spLevels: item.spLevels,
+          nominal: item.totalSp,
+          tanggal: null,
+          alasan: item.alasan,
+          sumber: "historis",
+          createdAt: serverTimestamp()
+        });
+      });
+      await batch.commit();
+    }
+    await setDoc(doc(db, "meta", "importStatus"), { imported: true, importedAt: serverTimestamp(), total: HISTORIS_DATA.length });
+    $("#importBanner").classList.add("hidden");
+    await loadRecords();
+  }catch(err){
+    console.error(err);
+    alert("Impor gagal: " + err.message + "\n\nPeriksa apakah Firestore Rules mengizinkan tulis data (mode test / rules terbuka).");
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "Impor Data Historis";
+  }
+}
+
+/* =========================================================
+   4) AGREGASI & RENDER
+   ========================================================= */
+function aggregateByStaff(list){
+  const map = new Map();
+  list.forEach(r => {
+    const key = (r.staffId && r.staffId.trim()) || r.nama;
+    if(!map.has(key)){
+      map.set(key, { key, nama:r.nama, outlet:r.outlet, posisi:r.posisi, count:0, nominal:0, sev:{1:0,2:0,3:0}, items:[] });
+    }
+    const s = map.get(key);
+    s.count += 1;
+    s.nominal += r.nominal;
+    (r.spLevels.length ? r.spLevels : [0]).forEach(lv => { if(s.sev[lv] !== undefined) s.sev[lv] += 1; });
+    s.items.push(r);
+  });
+  return Array.from(map.values());
+}
+
+function renderAll(){
+  renderStats();
+  renderRanking();
+  renderOutletBars();
+  populateOutletFilter();
+  renderTable();
+}
+
+function renderStats(){
+  const staffAgg = aggregateByStaff(records);
+  const totalNominal = records.reduce((a,r) => a + r.nominal, 0);
+  const repeatCount = staffAgg.filter(s => s.count > 1).length;
+  $("#statTotal").textContent = records.length.toLocaleString("id-ID");
+  $("#statStaff").textContent = staffAgg.length.toLocaleString("id-ID");
+  $("#statNominal").textContent = formatRupiah(totalNominal);
+  $("#statRepeat").textContent = repeatCount.toLocaleString("id-ID");
+}
+
+function renderRanking(){
+  const staffAgg = aggregateByStaff(records).sort((a,b) => b.count - a.count).slice(0, 12);
+  const wrap = $("#rankingList");
+  if(staffAgg.length === 0){
+    wrap.innerHTML = '<div class="empty-state">Belum ada data.</div>';
+    return;
+  }
+  wrap.innerHTML = staffAgg.map((s, i) => {
+    const total = s.sev[1] + s.sev[2] + s.sev[3] || 1;
+    const w1 = (s.sev[1]/total*100).toFixed(1);
+    const w2 = (s.sev[2]/total*100).toFixed(1);
+    const w3 = (s.sev[3]/total*100).toFixed(1);
+    return `
+      <div class="staff-row" data-key="${encodeURIComponent(s.key)}">
+        <div class="staff-rank">${i+1}</div>
+        <div class="staff-info">
+          <div class="staff-name">${escapeHtml(s.nama)}</div>
+          <div class="staff-meta">${escapeHtml(s.outlet)}</div>
+        </div>
+        <div class="sev-bar" title="SP1: ${s.sev[1]} · SP2: ${s.sev[2]} · SP3: ${s.sev[3]}">
+          <div class="sev-seg-1" style="width:${w1}%"></div>
+          <div class="sev-seg-2" style="width:${w2}%"></div>
+          <div class="sev-seg-3" style="width:${w3}%"></div>
+        </div>
+        <div class="staff-count">${s.count}<small>${formatRupiah(s.nominal)}</small></div>
+      </div>`;
+  }).join("");
+  $$("#rankingList .staff-row").forEach(el => {
+    el.addEventListener("click", () => openHistory(decodeURIComponent(el.dataset.key)));
+  });
+}
+
+function renderOutletBars(){
+  const map = new Map();
+  records.forEach(r => map.set(r.outlet, (map.get(r.outlet)||0) + 1));
+  const arr = Array.from(map.entries()).sort((a,b) => b[1]-a[1]).slice(0, 10);
+  const max = arr.length ? arr[0][1] : 1;
+  const wrap = $("#outletBars");
+  if(arr.length === 0){
+    wrap.innerHTML = '<div class="empty-state">Belum ada data.</div>';
+    return;
+  }
+  wrap.innerHTML = arr.map(([outlet, count]) => `
+    <div class="bar-row">
+      <div class="bar-label" title="${escapeHtml(outlet)}">${escapeHtml(outlet)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(count/max*100).toFixed(1)}%"></div></div>
+      <div class="bar-val">${count}</div>
+    </div>
+  `).join("");
+}
+
+function populateOutletFilter(){
+  const sel = $("#fOutlet");
+  const current = sel.value;
+  const outlets = Array.from(new Set(records.map(r => r.outlet))).sort();
+  sel.innerHTML = '<option value="">Semua Outlet</option>' + outlets.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join("");
+  sel.value = current;
+}
+
+function getFilteredRecords(){
+  const search = $("#fSearch").value.trim().toLowerCase();
+  const outlet = $("#fOutlet").value;
+  const level = $("#fLevel").value;
+  const sp = $("#fSp").value;
+  return records.filter(r => {
+    if(search && !r.nama.toLowerCase().includes(search)) return false;
+    if(outlet && r.outlet !== outlet) return false;
+    if(level && r.level !== level) return false;
+    if(sp && !r.spLevels.includes(Number(sp))) return false;
+    return true;
+  }).sort((a,b) => {
+    if(a.tanggal && b.tanggal) return b.tanggal.localeCompare(a.tanggal);
+    if(a.tanggal) return -1;
+    if(b.tanggal) return 1;
+    return 0;
+  });
+}
+
+function renderTable(){
+  const filtered = getFilteredRecords();
+  const body = $("#tableBody");
+  $("#emptyState").classList.toggle("hidden", filtered.length > 0);
+  body.innerHTML = filtered.map(r => `
+    <tr data-key="${encodeURIComponent((r.staffId && r.staffId.trim()) || r.nama)}">
+      <td>${formatTanggal(r.tanggal)}</td>
+      <td>${escapeHtml(r.nama)}</td>
+      <td>${escapeHtml(r.outlet)}</td>
+      <td>${r.level === "Manager" ? '<span class="tag-manager">Manager</span>' : 'Staff'}</td>
+      <td>${(r.spLevels.length ? r.spLevels : ["-"]).map(lv => lv === "-" ? "-" : `<span class="badge badge-${lv}">SP${lv}</span>`).join("")}</td>
+      <td class="num">${formatRupiah(r.nominal)}</td>
+      <td class="cell-alasan" title="${escapeHtml(r.alasan)}">${escapeHtml(r.alasan)}</td>
+    </tr>
+  `).join("");
+  $$("#tableBody tr").forEach(el => {
+    el.addEventListener("click", () => openHistory(decodeURIComponent(el.dataset.key)));
+  });
+}
+
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+/* =========================================================
+   5) MODAL: RIWAYAT PER STAFF
+   ========================================================= */
+function openHistory(key){
+  const staffAgg = aggregateByStaff(records);
+  const s = staffAgg.find(x => x.key === key);
+  if(!s) return;
+  $("#histName").textContent = s.nama;
+  $("#histMeta").textContent = `${s.outlet} · ${s.count} temuan · Total potongan ${formatRupiah(s.nominal)}`;
+  const items = s.items.slice().sort((a,b) => {
+    if(a.tanggal && b.tanggal) return b.tanggal.localeCompare(a.tanggal);
+    if(a.tanggal) return -1;
+    if(b.tanggal) return 1;
+    return 0;
+  });
+  const hasHistoris = items.some(i => i.sumber === "historis");
+  $("#histBody").innerHTML =
+    (hasHistoris ? '<div class="history-note">Sebagian catatan berasal dari rekap awal Jan–Mei 2026 tanpa tanggal presisi per kejadian.</div>' : "") +
+    items.map(i => `
+      <div class="history-item">
+        <div class="hi-top">
+          <span class="hi-date">${formatTanggal(i.tanggal)}</span>
+          <span class="hi-nominal">${formatRupiah(i.nominal)}</span>
+        </div>
+        <div>${(i.spLevels.length ? i.spLevels : ["-"]).map(lv => lv === "-" ? "-" : `<span class="badge badge-${lv}">SP${lv}</span>`).join("")}</div>
+        <div class="hi-alasan" style="margin-top:6px;">${escapeHtml(i.alasan)}</div>
+      </div>
+    `).join("");
+  $("#historyOverlay").classList.remove("hidden");
+}
+
+/* =========================================================
+   6) FORM TAMBAH TEMUAN
+   ========================================================= */
+async function submitForm(e){
+  e.preventDefault();
+  const btn = $("#btnSubmit");
+  const errBox = $("#formError");
+  errBox.classList.add("hidden");
+
+  const payload = {
+    staffId: $("#inId").value.trim(),
+    nama: $("#inNama").value.trim(),
+    posisi: $("#inPosisi").value.trim() || "-",
+    outlet: $("#inOutlet").value.trim(),
+    level: $("#inLevel").value,
+    spLevels: [Number($("#inJenis").value)],
+    nominal: Number($("#inNominal").value),
+    tanggal: $("#inTanggal").value,
+    alasan: $("#inAlasan").value.trim(),
+    sumber: "manual",
+    createdAt: serverTimestamp()
+  };
+
+  if(!payload.nama || !payload.outlet || !payload.tanggal || !payload.alasan || !payload.nominal){
+    errBox.textContent = "Mohon lengkapi semua kolom bertanda *.";
+    errBox.classList.remove("hidden");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Menyimpan…";
+  try{
+    await addDoc(collection(db, "temuan"), payload);
+    closeOverlay("addOverlay");
+    $("#addForm").reset();
+    await loadRecords();
+  }catch(err){
+    console.error(err);
+    errBox.textContent = "Gagal menyimpan: " + err.message;
+    errBox.classList.remove("hidden");
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "Simpan Temuan";
+  }
+}
+
+/* =========================================================
+   7) EKSPOR CSV
+   ========================================================= */
+function exportCsv(){
+  const rows = getFilteredRecords();
+  const header = ["Tanggal","ID Staff","Nama","Posisi","Outlet","Level","Jenis SP","Nominal","Alasan"];
+  const lines = [header.join(",")];
+  rows.forEach(r => {
+    const line = [
+      r.tanggal || "Historis Jan-Mei 2026",
+      r.staffId,
+      r.nama,
+      r.posisi,
+      r.outlet,
+      r.level,
+      r.spLevels.join("/"),
+      r.nominal,
+      r.alasan
+    ].map(v => `"${String(v).replaceAll('"','""')}"`).join(",");
+    lines.push(line);
+  });
+  const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "temuan_export.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* =========================================================
+   8) BINDING UI
+   ========================================================= */
+function closeOverlay(id){ $("#"+id).classList.add("hidden"); }
+
+function bindUI(){
+  $("#btnOpenAdd").addEventListener("click", () => {
+    $("#inTanggal").value = new Date().toISOString().slice(0,10);
+    $("#addOverlay").classList.remove("hidden");
+  });
+  $$("[data-close]").forEach(btn => {
+    btn.addEventListener("click", () => closeOverlay(btn.dataset.close));
+  });
+  $$(".overlay").forEach(ov => {
+    ov.addEventListener("click", (e) => { if(e.target === ov) ov.classList.add("hidden"); });
+  });
+  $("#addForm").addEventListener("submit", submitForm);
+  $("#inJenis").addEventListener("change", (e) => {
+    $("#inNominal").value = SP_NOMINAL[e.target.value] || "";
+  });
+  $("#inNominal").value = SP_NOMINAL[1];
+
+  $("#btnImport").addEventListener("click", importHistoris);
+  $("#btnExport").addEventListener("click", exportCsv);
+  ["fSearch","fOutlet","fLevel","fSp"].forEach(id => {
+    $("#"+id).addEventListener("input", renderTable);
+    $("#"+id).addEventListener("change", renderTable);
+  });
+}
+
+init();
+</script>
+</body>
+</html>
