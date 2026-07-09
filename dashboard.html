@@ -120,6 +120,7 @@
   /* severity bar */
   .staff-row{
     display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;
+    transition:background .15s ease;
   }
   .staff-row:last-child{border-bottom:none;}
   .staff-row:hover{background:var(--hover);margin:0 -8px;padding:10px 8px;border-radius:8px;}
@@ -153,6 +154,7 @@
   }
   tbody td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:top;}
   tbody tr:last-child td{border-bottom:none;}
+  tbody tr{transition:background .12s ease;}
   tbody tr:hover{background:var(--hover);cursor:pointer;}
   .cell-alasan{max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-muted);}
   .badge{display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;margin-right:3px;}
@@ -166,11 +168,13 @@
   .overlay{
     position:fixed;inset:0;background:rgba(15,15,25,.5);
     display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;
+    animation:fadeIn .18s ease;
   }
   .hidden{display:none !important;}
   .modal{
     background:var(--surface);border-radius:16px;max-width:560px;width:100%;max-height:88vh;overflow-y:auto;
     box-shadow:0 24px 60px rgba(0,0,0,.22);
+    animation:modalPop .22s cubic-bezier(.16,1,.3,1);
   }
   .modal-head{padding:20px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:10px;position:sticky;top:0;background:var(--surface);z-index:2;}
   .modal-head h3{margin:0 0 2px;font-size:17px;}
@@ -208,12 +212,18 @@
   .tab-btn:hover{background:var(--accent-bg);color:var(--accent-ink);}
   .tab-btn.active{background:var(--brand);color:#fff;}
   .tab-panel{display:none;}
-  .tab-panel.active{display:block;}
+  .tab-panel.active{display:block;animation:fadeSlideIn .28s cubic-bezier(.16,1,.3,1);}
+  @keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes modalPop{from{opacity:0;transform:translateY(10px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+  body{animation:fadeIn .45s ease;}
+  .fade-refresh{animation:fadeIn .3s ease;}
   .see-all-link{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--brand);background:none;border:none;cursor:pointer;padding:10px 0 0;font-family:inherit;}
   .pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;flex-wrap:wrap;}
   .page-btn{
     appearance:none;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-family:inherit;
     font-size:13px;font-weight:600;color:var(--ink);padding:7px 12px;border-radius:8px;min-width:36px;
+    transition:background .15s ease,color .15s ease,border-color .15s ease;
   }
   .page-btn:hover:not(:disabled){background:var(--hover);}
   .page-btn.active{background:var(--brand);color:#fff;border-color:var(--brand);}
@@ -677,6 +687,7 @@ function renderRanking(){
   $$("#rankingList .staff-row").forEach(el => {
     el.addEventListener("click", () => openHistory(decodeURIComponent(el.dataset.key)));
   });
+  fadeRefresh(wrap);
 }
 
 function renderOutletBars(){
@@ -696,6 +707,7 @@ function renderOutletBars(){
       <div class="bar-val">${count}</div>
     </div>
   `).join("");
+  fadeRefresh(wrap);
 }
 
 function populateOutletFilter(){
@@ -753,6 +765,7 @@ function renderTable(){
   $$("#tableBody tr").forEach(el => {
     el.addEventListener("click", () => openHistory(decodeURIComponent(el.dataset.key)));
   });
+  fadeRefresh(body);
 
   renderPagination(filtered.length, totalPages);
 }
@@ -785,6 +798,13 @@ function renderPagination(totalItems, totalPages){
   $$(".page-btn[data-page]").forEach(btn => {
     btn.addEventListener("click", () => { currentPage = Number(btn.dataset.page); renderTable(); });
   });
+}
+
+function fadeRefresh(el){
+  if(!el) return;
+  el.classList.remove("fade-refresh");
+  void el.offsetWidth;
+  el.classList.add("fade-refresh");
 }
 
 function escapeHtml(str){
