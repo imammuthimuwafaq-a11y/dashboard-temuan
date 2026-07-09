@@ -314,7 +314,7 @@
     <table>
       <thead>
         <tr>
-          <th>Tanggal</th><th>Nama Staff</th><th>Outlet</th><th>Level</th><th>Jenis SP</th><th>Nominal</th><th>Alasan</th>
+          <th>Tanggal</th><th>Nama Staff</th><th>Posisi</th><th>Outlet</th><th>Level</th><th>Jenis SP</th><th>Nominal</th><th>Alasan</th>
         </tr>
       </thead>
       <tbody id="tableBody"></tbody>
@@ -674,7 +674,7 @@ function renderRanking(){
         <div class="staff-rank">${i+1}</div>
         <div class="staff-info">
           <div class="staff-name">${escapeHtml(s.nama)}</div>
-          <div class="staff-meta">${escapeHtml(s.outlet)}</div>
+          <div class="staff-meta">${escapeHtml(s.outlet)} · ${escapeHtml(abbreviatePosisi(s.posisi))}</div>
         </div>
         <div class="sev-bar" title="SP1: ${s.sev[1]} · SP2: ${s.sev[2]} · SP3: ${s.sev[3]}">
           <div class="sev-seg-1" style="width:${w1}%"></div>
@@ -755,6 +755,7 @@ function renderTable(){
     <tr data-key="${encodeURIComponent((r.staffId && r.staffId.trim()) || r.nama)}">
       <td>${formatTanggal(r.tanggal)}</td>
       <td>${escapeHtml(r.nama)}</td>
+      <td title="${escapeHtml(r.posisi)}">${escapeHtml(abbreviatePosisi(r.posisi))}</td>
       <td>${escapeHtml(r.outlet)}</td>
       <td>${r.level === "Manager" ? '<span class="tag-manager">Manager</span>' : 'Staff'}</td>
       <td>${(r.spLevels.length ? r.spLevels : ["-"]).map(lv => lv === "-" ? "-" : `<span class="badge badge-${lv}">SP${lv}</span>`).join("")}</td>
@@ -800,6 +801,37 @@ function renderPagination(totalItems, totalPages){
   });
 }
 
+const POSITION_MAP = [
+  [/outlet\s*manager/i, "OM"],
+  [/pt\s*manager/i, "PT Mgr"],
+  [/facility.*manager|facility\s*operational/i, "Fac Mgr"],
+  [/fitness\s*manager/i, "Fit Mgr"],
+  [/sales\s*manager/i, "Sales Mgr"],
+  [/leader.*customer\s*service/i, "CS Lead"],
+  [/customer\s*service/i, "CS"],
+  [/call\s*center/i, "CC"],
+  [/front\s*office/i, "FO"],
+  [/member(ship)?\s*co?u?nsultant?/i, "MC"],
+  [/personal\s*trainer/i, "PT"],
+  [/telesales/i, "TS"],
+  [/teknisi/i, "Teknisi"],
+  [/cleaning|cleaner|kebersihan/i, "Cleaning"],
+  [/security|satpam/i, "Security"],
+  [/supervisor/i, "SPV"],
+  [/receptionist|resepsionis/i, "Reception"],
+  [/admin/i, "Admin"],
+  [/facility/i, "Facility"],
+];
+
+function abbreviatePosisi(raw){
+  const text = String(raw || "").trim();
+  if(!text || text === "-" || text.toLowerCase().includes("tidak diketahui")) return "-";
+  for(const [pattern, abbr] of POSITION_MAP){
+    if(pattern.test(text)) return abbr;
+  }
+  return text.length > 16 ? text.slice(0, 16) + "…" : text;
+}
+
 function fadeRefresh(el){
   if(!el) return;
   el.classList.remove("fade-refresh");
@@ -821,7 +853,7 @@ function openHistory(key){
   const s = staffAgg.find(x => x.key === key);
   if(!s) return;
   $("#histName").textContent = s.nama;
-  $("#histMeta").textContent = `${s.outlet} · ${s.count} temuan · Total potongan ${formatRupiah(s.nominal)}`;
+  $("#histMeta").textContent = `${s.outlet} · ${abbreviatePosisi(s.posisi)} · ${s.count} temuan · Total potongan ${formatRupiah(s.nominal)}`;
   const items = s.items.slice().sort((a,b) => {
     if(a.tanggal && b.tanggal) return b.tanggal.localeCompare(a.tanggal);
     if(a.tanggal) return -1;
