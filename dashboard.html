@@ -4,18 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Temuan — Kepatuhan Internal</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#EFF2F6;
+    --bg:#E3F4FB;
     --surface:#FFFFFF;
     --ink:#1A2033;
     --ink-muted:#666F82;
-    --border:#E1E5EC;
-    --brand:#293466;
-    --brand-2:#4A5798;
+    --border:#DCEAF3;
+    --brand:#4741A6;
+    --brand-2:#9BBBFC;
+    --accent:#F9CE69;
+    --accent-bg:#FDF0D3;
+    --accent-ink:#7A5310;
     --sp1:#C89416;
     --sp1-bg:#FBF1D8;
     --sp2:#D2701F;
@@ -31,10 +31,10 @@
   body{
     background:var(--bg);
     color:var(--ink);
-    font-family:'Inter',system-ui,sans-serif;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica Neue,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;
   }
-  h1,h2,h3,.font-display{font-family:'Sora',system-ui,sans-serif;}
+  h1,h2,h3,.font-display{font-family:inherit;font-weight:700;}
   .num{font-variant-numeric: tabular-nums;}
   a{color:inherit;}
 
@@ -94,10 +94,10 @@
   @media (max-width:860px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
   .stat-card{
     background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-    padding:18px 20px;box-shadow:var(--shadow);
+    padding:18px 20px;box-shadow:var(--shadow);border-top:3px solid var(--accent);
   }
   .stat-card .label{font-size:12.5px;color:var(--ink-muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;}
-  .stat-card .value{font-size:26px;font-weight:700;font-family:'Sora',sans-serif;}
+  .stat-card .value{font-size:26px;font-weight:700;}
   .stat-card .value small{font-size:14px;font-weight:600;color:var(--ink-muted);}
 
   /* ---------- panels ---------- */
@@ -197,7 +197,7 @@
     font-size:13.5px;font-weight:600;color:var(--ink-muted);padding:9px 18px;border-radius:9px;
     display:inline-flex;align-items:center;gap:7px;transition:background .15s ease,color .15s ease;
   }
-  .tab-btn:hover{background:#F5F6FA;}
+  .tab-btn:hover{background:var(--accent-bg);color:var(--accent-ink);}
   .tab-btn.active{background:var(--brand);color:#fff;}
   .tab-panel{display:none;}
   .tab-panel.active{display:block;}
