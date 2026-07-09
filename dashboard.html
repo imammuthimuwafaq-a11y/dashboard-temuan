@@ -370,62 +370,18 @@
         Buka file <code>dashboard.html</code>, cari bagian <code>firebaseConfig</code> di dekat akhir file,
         lalu ganti dengan konfigurasi dari Firebase Console Anda (Project Settings → Your apps → SDK setup and configuration):
       </p>
-      <pre id="configErrorDetail">const firebaseConfig = {
-  apiKey: "AIzaSyA1OJQwQUdVEU77l3banWLKxOUmhdmgYPQ",
-  authDomain: "dashboard-temuan.firebaseapp.com",
-  projectId: "dashboard-temuan",
-  storageBucket: "dashboard-temuan.firebasestorage.app",
-  messagingSenderId: "999536362309",
-  appId: "1:999536362309:web:6c6a97e9117feb7455342c"
-};Salin/screenshot bagian ini — Anda akan membutuhkannya di langkah berikutnya. Setelah itu klik "Continue to console".
-Bagian D — Masukkan Config ke File Dashboard
-
-Buka file dashboard.html yang saya buat, dengan Notepad (klik kanan file → Open with → Notepad, atau text editor apa pun)
-Tekan Ctrl+F, cari kata: PASTE_API_KEY_DI_SINI
-Ganti seluruh isi blok firebaseConfig di file dengan config asli dari Firebase (Bagian C di atas) — pastikan formatnya tetap sama, hanya isinya yang diganti
-Simpan file (Ctrl+S)
-
-Bagian E — Atur Firestore Security Rules
-Karena dashboard tanpa login, mode "test" hanya berlaku 30 hari lalu otomatis terkunci. Supaya permanen:
-
-Kembali ke Firebase Console → Firestore → tab Rules
-Hapus semua isi, ganti dengan:
-
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
-    }
-  }
-}
-
-Klik Publish
-
-⚠️ Ini membuat data bisa dibaca/diubah siapa pun yang tahu alamat project Anda — jangan bagikan link dashboard secara publik/sosial media.
-Satu hal penting sebelum Anda coba
-Jangan buka file dengan klik dua kali langsung dari komputer — browser modern (Chrome/Edge) akan memblokir koneksi Firebase kalau dibuka dengan cara itu (karena dianggap tidak aman). File ini harus diakses lewat alamat web (http/https) — yaitu setelah diupload ke GitHub Pages seperti yang kita bahas sebelumnya.
-Setelah file diupload ke GitHub Pages dan dibuka lewat link https://...github.io/..., cek pojok kanan atas dashboard — kalau tulisannya berubah jadi "Terhubung" dengan titik hijau, berarti sukses. Kalau masih error, kirim saya screenshot pesan errornya, saya bantu diagnosa.saya sudah sampai step C tidak ada "project settings" pada menu "Setting"Mengidentifikasi perubahan antarmuka Firebase dan menemukan pengaturan alternatifMengidentifikasi perubahan antarmuka Firebase dan menemukan pengaturan alternatifUI Firebase-nya memang sudah berubah tampilan dari yang saya jelaskan sebelumnya. Tapi tenang, fungsinya masih ada — hanya namanya sedikit berbeda. Coba langkah ini:
-Klik "General" (paling atas di submenu yang muncul itu). Itu adalah halaman yang sebelumnya bernama "Project settings" — di situ ada bagian "Your apps" tempat Anda bisa daftarkan Web App dan dapatkan firebaseConfig.
-Coba klik General, lalu scroll ke bawah sampai ketemu bagian "Your apps" atau "SDK setup and configuration". Kalau belum ada app terdaftar, akan ada ikon </> untuk menambahkan Web App — klik itu untuk lanjut ke langkah C seperti yang saya jelaskan sebelumnya.
-Kalau tampilannya berbeda dari yang saya duga, kirim saya screenshot halaman "General" itu, saya bantu tunjukkan tepatnya di mana.Ingin diberi tahu saat Claude merespons?",
-  authDomain: "nama-project.firebaseapp.com",
-  projectId: "nama-project",
-  storageBucket: "nama-project.appspot.com",
-  messagingSenderId: "...",
-  appId: "..."
-};</pre>
+      <pre id="configErrorDetail">(Contoh format config Firebase akan tampil di sini jika belum terhubung)</pre>
       <p style="font-size:13px;color:var(--ink-muted);">Setelah diisi dan file di-upload ulang ke GitHub, muat ulang halaman ini.</p>
     </div>
   </div>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
 import {
   getFirestore, collection, addDoc, getDocs, doc, getDoc, setDoc,
   writeBatch, serverTimestamp, query, orderBy
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
 /* =========================================================
    1) KONFIGURASI FIREBASE — GANTI BAGIAN INI
