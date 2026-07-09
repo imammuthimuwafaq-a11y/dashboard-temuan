@@ -190,6 +190,26 @@
   #configOverlay .modal{max-width:640px;}
   #configOverlay code{background:#F1F3F8;padding:2px 6px;border-radius:5px;font-size:12.5px;}
   #configOverlay pre{background:#1A2033;color:#E4E8F5;padding:14px;border-radius:10px;font-size:12px;overflow-x:auto;line-height:1.6;}
+
+  .tab-nav{display:flex;gap:4px;margin-top:-38px;background:var(--surface,#fff);border-radius:12px;padding:5px;box-shadow:var(--shadow);border:1px solid var(--border);width:fit-content;}
+  .tab-btn{
+    appearance:none;border:none;background:transparent;cursor:pointer;font-family:inherit;
+    font-size:13.5px;font-weight:600;color:var(--ink-muted);padding:9px 18px;border-radius:9px;
+    display:inline-flex;align-items:center;gap:7px;transition:background .15s ease,color .15s ease;
+  }
+  .tab-btn:hover{background:#F5F6FA;}
+  .tab-btn.active{background:var(--brand);color:#fff;}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  .see-all-link{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--brand);background:none;border:none;cursor:pointer;padding:10px 0 0;font-family:inherit;}
+  .filter-toggle{display:inline-flex;align-items:center;gap:6px;}
+  .filter-extra{display:none;gap:8px;flex-wrap:wrap;margin-top:10px;width:100%;}
+  .filter-extra.open{display:flex;}
+  .add-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
+  @media (max-width:860px){.add-grid{grid-template-columns:1fr;}}
+  .form-success{background:#DFF3E7;color:#1F6B42;border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:12px;}
+  .upload-steps{font-size:13px;color:var(--ink-muted);line-height:1.7;margin:0 0 16px;}
+  .upload-steps b{color:var(--ink);}
 </style>
 </head>
 <body>
@@ -201,15 +221,7 @@
       <h1>Dashboard Temuan Staff</h1>
       <p class="sub">Ringkasan Surat Peringatan (SP), riwayat per staff, dan pencatatan temuan baru.</p>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
-      <span class="status-pill" id="statusPill"><span class="status-dot wait" id="statusDot"></span><span id="statusText">Menyambungkan…</span></span>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-secondary" id="btnDownloadTemplate">Unduh Template Excel</button>
-        <button class="btn btn-secondary" id="btnUploadExcel">Upload Excel</button>
-        <button class="btn btn-primary" id="btnOpenAdd">+ Tambah Temuan</button>
-      </div>
-      <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none;">
-    </div>
+    <span class="status-pill" id="statusPill"><span class="status-dot wait" id="statusDot"></span><span id="statusText">Menyambungkan…</span></span>
   </div>
 </header>
 
@@ -223,128 +235,152 @@
     <button class="btn btn-secondary" id="btnImport">Impor Data Historis</button>
   </div>
 
-  <div class="stat-grid">
-    <div class="stat-card">
-      <div class="label">Total Temuan</div>
-      <div class="value num" id="statTotal">–</div>
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="ringkasan">Ringkasan</button>
+    <button class="tab-btn" data-tab="data">Data Temuan</button>
+    <button class="tab-btn" data-tab="tambah">Tambah Data</button>
+  </nav>
+
+  <!-- ============ TAB: RINGKASAN ============ -->
+  <div class="tab-panel active" id="tab-ringkasan">
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="label">Total Temuan</div>
+        <div class="value num" id="statTotal">–</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Staff Terdampak</div>
+        <div class="value num" id="statStaff">–</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Potongan</div>
+        <div class="value num" id="statNominal">–</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Temuan Berulang (&gt;1)</div>
+        <div class="value num" id="statRepeat">–</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="label">Staff Terdampak</div>
-      <div class="value num" id="statStaff">–</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Total Potongan</div>
-      <div class="value num" id="statNominal">–</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Temuan Berulang (&gt;1)</div>
-      <div class="value num" id="statRepeat">–</div>
+
+    <div class="panel-grid">
+      <div class="panel">
+        <h2>Peringkat Staff</h2>
+        <p class="panel-sub">5 staff dengan temuan terbanyak. Klik nama untuk lihat riwayat lengkap.</p>
+        <div id="rankingList"></div>
+        <button class="see-all-link" id="btnSeeAllStaff">Lihat semua data temuan →</button>
+      </div>
+      <div class="panel">
+        <h2>Distribusi per Outlet</h2>
+        <p class="panel-sub">Jumlah temuan per lokasi outlet.</p>
+        <div id="outletBars"></div>
+      </div>
     </div>
   </div>
 
-  <div class="panel-grid">
-    <div class="panel">
-      <h2>Peringkat Staff</h2>
-      <p class="panel-sub">Diurutkan dari jumlah temuan terbanyak. Klik nama untuk lihat riwayat lengkap.</p>
-      <div id="rankingList"></div>
+  <!-- ============ TAB: DATA TEMUAN ============ -->
+  <div class="tab-panel" id="tab-data">
+    <div class="table-toolbar">
+      <input type="text" id="fSearch" placeholder="Cari nama staff…" style="min-width:220px;">
+      <div class="filter-toggle">
+        <button class="btn btn-secondary" id="btnToggleFilter">Filter Lanjutan</button>
+        <button class="btn btn-secondary" id="btnExport">Unduh CSV</button>
+      </div>
+      <div class="filter-extra" id="filterExtra">
+        <select id="fOutlet"><option value="">Semua Outlet</option></select>
+        <select id="fLevel"><option value="">Semua Level</option><option value="Staff">Staff</option><option value="Manager">Manager</option></select>
+        <select id="fSp"><option value="">Semua Jenis SP</option><option value="1">SP 1</option><option value="2">SP 2</option><option value="3">SP 3</option></select>
+      </div>
     </div>
-    <div class="panel">
-      <h2>Distribusi per Outlet</h2>
-      <p class="panel-sub">Jumlah temuan per lokasi outlet.</p>
-      <div id="outletBars"></div>
-    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Tanggal</th><th>Nama Staff</th><th>Outlet</th><th>Level</th><th>Jenis SP</th><th>Nominal</th><th>Alasan</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div class="empty-state hidden" id="emptyState">Belum ada catatan yang cocok dengan filter ini.</div>
   </div>
 
-  <div class="table-toolbar">
-    <h2 class="font-display" style="margin:0;font-size:16px;">Semua Catatan</h2>
-    <div class="filters">
-      <input type="text" id="fSearch" placeholder="Cari nama staff…">
-      <select id="fOutlet"><option value="">Semua Outlet</option></select>
-      <select id="fLevel"><option value="">Semua Level</option><option value="Staff">Staff</option><option value="Manager">Manager</option></select>
-      <select id="fSp"><option value="">Semua Jenis SP</option><option value="1">SP 1</option><option value="2">SP 2</option><option value="3">SP 3</option></select>
-      <button class="btn btn-secondary" id="btnExport">Unduh CSV</button>
+  <!-- ============ TAB: TAMBAH DATA ============ -->
+  <div class="tab-panel" id="tab-tambah">
+    <div class="add-grid">
+      <div class="panel">
+        <h2>Input Manual</h2>
+        <p class="panel-sub">Untuk satu temuan pada satu waktu.</p>
+        <div class="form-success hidden" id="formSuccess">Temuan berhasil disimpan.</div>
+        <div class="form-error hidden" id="formError"></div>
+        <form id="addForm">
+          <div class="form-grid">
+            <div>
+              <label>Nama Staff *</label>
+              <input type="text" id="inNama" required>
+            </div>
+            <div>
+              <label>ID Staff</label>
+              <input type="text" id="inId" placeholder="Opsional">
+            </div>
+            <div>
+              <label>Posisi / Jabatan</label>
+              <input type="text" id="inPosisi" placeholder="Misal: Personal Trainer">
+            </div>
+            <div>
+              <label>Outlet *</label>
+              <input type="text" id="inOutlet" required placeholder="Misal: FTL Bekasi">
+            </div>
+            <div>
+              <label>Level *</label>
+              <select id="inLevel" required>
+                <option value="Staff">Staff</option>
+                <option value="Manager">Manager</option>
+              </select>
+            </div>
+            <div>
+              <label>Jenis SP *</label>
+              <select id="inJenis" required>
+                <option value="1">SP 1</option>
+                <option value="2">SP 2</option>
+                <option value="3">SP 3</option>
+              </select>
+            </div>
+            <div>
+              <label>Tanggal Kejadian *</label>
+              <input type="date" id="inTanggal" required>
+            </div>
+            <div>
+              <label>Nominal Potongan (Rp) *</label>
+              <input type="number" id="inNominal" required min="0" step="1000">
+              <p class="form-hint">Terisi otomatis sesuai jenis SP, bisa diubah.</p>
+            </div>
+            <div class="full">
+              <label>Alasan / Kronologi *</label>
+              <textarea id="inAlasan" required placeholder="Jelaskan kronologi temuan…"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="btnSubmit" style="background:var(--brand);color:#fff;">Simpan Temuan</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>Upload Excel</h2>
+        <p class="panel-sub">Untuk banyak temuan sekaligus.</p>
+        <p class="upload-steps">
+          <b>1.</b> Unduh template, isi satu baris per temuan.<br>
+          <b>2.</b> Upload file — sistem akan cek data valid, duplikat, dan error sebelum disimpan.
+        </p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-secondary" id="btnDownloadTemplate">Unduh Template Excel</button>
+          <button class="btn btn-primary" id="btnUploadExcel" style="background:var(--brand);color:#fff;">Upload Excel</button>
+        </div>
+        <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none;">
+      </div>
     </div>
   </div>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Tanggal</th><th>Nama Staff</th><th>Outlet</th><th>Level</th><th>Jenis SP</th><th>Nominal</th><th>Alasan</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-  </table>
-  <div class="empty-state hidden" id="emptyState">Belum ada catatan yang cocok dengan filter ini.</div>
 
   <footer>Dashboard Temuan Internal — data tersimpan di Firebase Firestore.</footer>
-</div>
-
-<!-- Modal: tambah temuan -->
-<div class="overlay hidden" id="addOverlay">
-  <div class="modal">
-    <div class="modal-head">
-      <div>
-        <h3>Tambah Temuan Baru</h3>
-        <p>Catatan baru akan langsung tersimpan dan tampil di riwayat staff.</p>
-      </div>
-      <button class="modal-close" data-close="addOverlay">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-error hidden" id="formError"></div>
-      <form id="addForm">
-        <div class="form-grid">
-          <div>
-            <label>Nama Staff *</label>
-            <input type="text" id="inNama" required>
-          </div>
-          <div>
-            <label>ID Staff</label>
-            <input type="text" id="inId" placeholder="Opsional">
-          </div>
-          <div>
-            <label>Posisi / Jabatan</label>
-            <input type="text" id="inPosisi" placeholder="Misal: Personal Trainer">
-          </div>
-          <div>
-            <label>Outlet *</label>
-            <input type="text" id="inOutlet" required placeholder="Misal: FTL Bekasi">
-          </div>
-          <div>
-            <label>Level *</label>
-            <select id="inLevel" required>
-              <option value="Staff">Staff</option>
-              <option value="Manager">Manager</option>
-            </select>
-          </div>
-          <div>
-            <label>Jenis SP *</label>
-            <select id="inJenis" required>
-              <option value="1">SP 1</option>
-              <option value="2">SP 2</option>
-              <option value="3">SP 3</option>
-            </select>
-          </div>
-          <div>
-            <label>Tanggal Kejadian *</label>
-            <input type="date" id="inTanggal" required>
-          </div>
-          <div>
-            <label>Nominal Potongan (Rp) *</label>
-            <input type="number" id="inNominal" required min="0" step="1000">
-            <p class="form-hint">Terisi otomatis sesuai jenis SP, bisa diubah.</p>
-          </div>
-          <div class="full">
-            <label>Alasan / Kronologi *</label>
-            <textarea id="inAlasan" required placeholder="Jelaskan kronologi temuan…"></textarea>
-          </div>
-        </div>
-        <div class="form-actions">
-          <button type="button" class="btn btn-secondary" data-close="addOverlay">Batal</button>
-          <button type="submit" class="btn btn-primary" id="btnSubmit" style="background:var(--brand);color:#fff;">Simpan Temuan</button>
-        </div>
-      </form>
-    </div>
-  </div>
 </div>
 
 <!-- Modal: riwayat staff -->
@@ -602,7 +638,7 @@ function renderStats(){
 }
 
 function renderRanking(){
-  const staffAgg = aggregateByStaff(records).sort((a,b) => b.count - a.count).slice(0, 12);
+  const staffAgg = aggregateByStaff(records).sort((a,b) => b.count - a.count).slice(0, 5);
   const wrap = $("#rankingList");
   if(staffAgg.length === 0){
     wrap.innerHTML = '<div class="empty-state">Belum ada data.</div>';
@@ -743,7 +779,9 @@ async function submitForm(e){
   e.preventDefault();
   const btn = $("#btnSubmit");
   const errBox = $("#formError");
+  const successBox = $("#formSuccess");
   errBox.classList.add("hidden");
+  successBox.classList.add("hidden");
 
   const payload = {
     staffId: $("#inId").value.trim(),
@@ -769,8 +807,12 @@ async function submitForm(e){
   btn.textContent = "Menyimpan…";
   try{
     await addDoc(collection(db, "temuan"), payload);
-    closeOverlay("addOverlay");
     $("#addForm").reset();
+    $("#inJenis").value = "1";
+    $("#inNominal").value = SP_NOMINAL[1];
+    $("#inTanggal").value = new Date().toISOString().slice(0,10);
+    successBox.textContent = `Temuan untuk ${payload.nama} berhasil disimpan.`;
+    successBox.classList.remove("hidden");
     await loadRecords();
   }catch(err){
     console.error(err);
@@ -1007,15 +1049,29 @@ function exportCsv(){
 }
 
 /* =========================================================
-   10) BINDING UI
+   10) TAB NAVIGATION
+   ========================================================= */
+function switchTab(name){
+  $$(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+  $$(".tab-panel").forEach(p => p.classList.toggle("active", p.id === "tab-" + name));
+}
+
+/* =========================================================
+   11) BINDING UI
    ========================================================= */
 function closeOverlay(id){ $("#"+id).classList.add("hidden"); }
 
 function bindUI(){
-  $("#btnOpenAdd").addEventListener("click", () => {
-    $("#inTanggal").value = new Date().toISOString().slice(0,10);
-    $("#addOverlay").classList.remove("hidden");
+  $$(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
   });
+  $("#btnSeeAllStaff").addEventListener("click", () => switchTab("data"));
+  $("#btnToggleFilter").addEventListener("click", () => {
+    $("#filterExtra").classList.toggle("open");
+  });
+
+  $("#inTanggal").value = new Date().toISOString().slice(0,10);
+
   $$("[data-close]").forEach(btn => {
     btn.addEventListener("click", () => closeOverlay(btn.dataset.close));
   });
